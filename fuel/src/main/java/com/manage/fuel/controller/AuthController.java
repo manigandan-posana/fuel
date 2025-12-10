@@ -38,6 +38,13 @@ public class AuthController {
         return mapToDTO(userService.assignProject(userId, projectId));
     }
 
+    @PostMapping("/users")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public UserDTO createUser(@RequestBody UserDTO userDTO) {
+        User user = userService.createUser(userDTO.getEmail(), userDTO.getName(), userDTO.getProjectId());
+        return mapToDTO(user);
+    }
+
     private UserDTO mapToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());

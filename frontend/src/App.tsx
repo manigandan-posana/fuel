@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginRequest } from './authConfig';
-import { syncUser } from './store/slices/authSlice';
+import { syncUser, logout } from './store/slices/authSlice';
 import type { AppDispatch, RootState } from './store/store';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -38,6 +38,31 @@ function App() {
       }
     }
   }, [isAuthenticated, inProgress, instance, dispatch, status]);
+
+  // Handle authentication failures (user not authorized)
+  if (status === 'failed') {
+    return (
+      <div className="flex align-items-center justify-content-center h-screen surface-ground">
+        <div className="p-4 shadow-2 border-round surface-card text-center" style={{ maxWidth: '500px' }}>
+          <i className="pi pi-exclamation-triangle text-orange-500 mb-3" style={{ fontSize: '3rem' }}></i>
+          <h1 className="mb-2">Access Denied</h1>
+          <p className="mb-4 text-600">
+            Your account is not authorized to access this system. 
+            Please contact your administrator to request access.
+          </p>
+          <Button 
+            label="Logout" 
+            icon="pi pi-sign-out" 
+            onClick={() => {
+              dispatch(logout());
+              instance.logoutRedirect();
+            }} 
+            className="p-button-secondary" 
+          />
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = () => {
     instance.loginRedirect(loginRequest);

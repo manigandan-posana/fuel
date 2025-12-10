@@ -34,9 +34,7 @@ public class UserService {
             return existingUser.get();
         }
 
-        User newUser = new User();
-        newUser.setAzureId(azureId);
-
+        // Extract email from JWT
         String email;
         if (jwt.hasClaim("preferred_username")) {
             email = jwt.getClaimAsString("preferred_username");
@@ -45,22 +43,32 @@ public class UserService {
         } else {
             email = "unknown@domain.com";
         }
-        newUser.setEmail(email);
 
+        String name;
         if (jwt.hasClaim("name")) {
-            newUser.setName(jwt.getClaimAsString("name"));
+            name = jwt.getClaimAsString("name");
         } else {
-            newUser.setName("Unknown User");
+            name = "Unknown User";
         }
 
-        // Check if this is the designated admin email or if no users exist
+        // Check if user was pre-created by admin
+        User preCreatedUser = updateUserOnFirstLogin(email, azureId, name);
+        if (preCreatedUser != null) {
+            return preCreatedUser;
+        }
+
+        // Only allow auto-creation for admin email or if no users exist (first user)
         if ("gopinath.s@posanagroups.com".equalsIgnoreCase(email) || userRepository.count() == 0) {
+            User newUser = new User();
+            newUser.setAzureId(azureId);
+            newUser.setEmail(email);
+            newUser.setName(name);
             newUser.setRole(UserRole.ADMIN);
-        } else {
-            newUser.setRole(UserRole.USER);
+            return userRepository.save(newUser);
         }
 
-        return userRepository.save(newUser);
+        // For all other users, they must be created by admin first
+        throw new SecurityException("Access denied. Please contact your administrator to create an account for you.");
     }
 
     // Get or create a development user for testing without Azure AD
@@ -91,6 +99,43 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public User createUser(String email, String name, Long projectId) {
+        // Check if user already exists
+        Optional<User> existing = userRepository.findByEmail(email);
+        if (existing.isPresent()) {
+            throw new RuntimeException("User with this email already exists");
+        }
+
+        User newUser = new User();
+        newUser.setEmail(email);
+        newUser.setName(name);
+        newUser.setRole(UserRole.USER);
+        
+        // Azure ID will be set when they first login
+        newUser.setAzureId("pending-" + email);
+        
+        if (projectId != null) {
+            Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+            newUser.setProject(project);
+        }
+        
+        return userRepository.save(newUser);
+    }
+
+    public User updateUserOnFirstLogin(String email, String azureId, String name) {
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            user.setAzureId(azureId);
+            if (name != null && !name.isEmpty()) {
+                user.setName(name);
+            }
+            return userRepository.save(user);
+        }
+        return null;
     }
 
     /**

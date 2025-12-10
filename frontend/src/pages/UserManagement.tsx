@@ -4,6 +4,7 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
+import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { api } from '../services/api';
 import type { User, Project } from '../types';
@@ -14,8 +15,10 @@ const UserManagement = () => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(false);
     const [displayDialog, setDisplayDialog] = useState(false);
+    const [displayCreateDialog, setDisplayCreateDialog] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [newUser, setNewUser] = useState({ email: '', name: '', projectId: null as number | null });
 
     useEffect(() => {
         loadUsers();
@@ -58,6 +61,24 @@ const UserManagement = () => {
         }
     };
 
+    const handleCreateUser = async () => {
+        if (!newUser.email || !newUser.name) {
+            toast.error('Please fill all required fields');
+            return;
+        }
+
+        try {
+            await api.post('/auth/users', newUser);
+            toast.success('User created successfully. They can now login with their Microsoft account.');
+            setDisplayCreateDialog(false);
+            setNewUser({ email: '', name: '', projectId: null });
+            loadUsers();
+        } catch (error: any) {
+            console.error('Failed to create user:', error);
+            toast.error(error.response?.data?.message || 'Failed to create user');
+        }
+    };
+
     const roleBodyTemplate = (rowData: User) => {
         return <Tag value={rowData.role} severity={rowData.role === 'ADMIN' ? 'danger' : 'success'} style={{ fontSize: '11px' }} />;
     };
@@ -94,7 +115,10 @@ const UserManagement = () => {
                     Manage users and project assignments
                 </p>
             </div>
-            <Button label="Refresh" icon="pi pi-refresh" onClick={loadUsers} style={{ fontSize: '12px' }} />
+            <div className="flex gap-2">
+                <Button label="Create User" icon="pi pi-user-plus" onClick={() => setDisplayCreateDialog(true)} severity="success" style={{ fontSize: '12px' }} />
+                <Button label="Refresh" icon="pi pi-refresh" onClick={loadUsers} style={{ fontSize: '12px' }} />
+            </div>
         </div>
     );
 
@@ -138,6 +162,54 @@ const UserManagement = () => {
                         icon="pi pi-check"
                         onClick={handleAssignProject}
                         disabled={!selectedProject}
+                        style={{ fontSize: '12px' }}
+                    />
+                </div>
+            </Dialog>
+
+            <Dialog
+                header="Create New User"
+                visible={displayCreateDialog}
+                style={{ width: '30vw' }}
+                onHide={() => setDisplayCreateDialog(false)}
+            >
+                <div className="flex flex-column gap-4">
+                    <div className="flex flex-column gap-2">
+                        <label style={{ fontSize: '12px', fontWeight: '600' }}>Email (Microsoft Account) *</label>
+                        <InputText
+                            value={newUser.email}
+                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                            placeholder="user@example.com"
+                            style={{ fontSize: '12px' }}
+                        />
+                        <small className="text-500" style={{ fontSize: '11px' }}>User must have a valid Microsoft account with this email</small>
+                    </div>
+                    <div className="flex flex-column gap-2">
+                        <label style={{ fontSize: '12px', fontWeight: '600' }}>Full Name *</label>
+                        <InputText
+                            value={newUser.name}
+                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                            placeholder="John Doe"
+                            style={{ fontSize: '12px' }}
+                        />
+                    </div>
+                    <div className="flex flex-column gap-2">
+                        <label style={{ fontSize: '12px', fontWeight: '600' }}>Assign to Project (Optional)</label>
+                        <Dropdown
+                            value={projects.find(p => p.id === newUser.projectId) || null}
+                            options={projects}
+                            onChange={(e) => setNewUser({ ...newUser, projectId: e.value?.id || null })}
+                            optionLabel="name"
+                            placeholder="Select a Project"
+                            style={{ fontSize: '12px' }}
+                            showClear
+                        />
+                    </div>
+                    <Button
+                        label="Create User"
+                        icon="pi pi-check"
+                        onClick={handleCreateUser}
+                        disabled={!newUser.email || !newUser.name}
                         style={{ fontSize: '12px' }}
                     />
                 </div>

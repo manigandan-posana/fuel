@@ -16,6 +16,7 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<ProjectDTO> getAllProjects() {
         return projectService.getAllProjects();
     }
