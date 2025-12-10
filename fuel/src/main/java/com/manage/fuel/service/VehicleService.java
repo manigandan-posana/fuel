@@ -62,6 +62,47 @@ public class VehicleService {
         }
     }
 
+    public VehicleDTO updateVehicle(Long id, VehicleDTO dto, User currentUser) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        
+        // Check permissions
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            if (currentUser.getProject() == null || 
+                !currentUser.getProject().getId().equals(vehicle.getProject().getId())) {
+                throw new RuntimeException("Access Denied: You cannot modify vehicles outside your project.");
+            }
+        }
+        
+        vehicle.setPlateNumber(dto.getPlateNumber());
+        vehicle.setModel(dto.getModel());
+        vehicle.setDriverName(dto.getDriverName());
+        
+        // Only admin can change project
+        if (currentUser.getRole() == UserRole.ADMIN && dto.getProjectId() != null) {
+            Project project = projectRepository.findById(dto.getProjectId())
+                    .orElseThrow(() -> new RuntimeException("Project not found"));
+            vehicle.setProject(project);
+        }
+        
+        return mapToDTO(vehicleRepository.save(vehicle));
+    }
+
+    public void deleteVehicle(Long id, User currentUser) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        
+        // Check permissions
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            if (currentUser.getProject() == null || 
+                !currentUser.getProject().getId().equals(vehicle.getProject().getId())) {
+                throw new RuntimeException("Access Denied: You cannot delete vehicles outside your project.");
+            }
+        }
+        
+        vehicleRepository.delete(vehicle);
+    }
+
     private VehicleDTO mapToDTO(Vehicle vehicle) {
         VehicleDTO dto = new VehicleDTO();
         dto.setId(vehicle.getId());

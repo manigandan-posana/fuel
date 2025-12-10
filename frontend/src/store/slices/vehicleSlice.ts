@@ -23,6 +23,11 @@ export const createVehicle = createAsyncThunk('vehicles/createVehicle', async (v
     return response.data;
 });
 
+export const deleteVehicle = createAsyncThunk('vehicles/deleteVehicle', async (id: number) => {
+    await api.delete(`/vehicles/${id}`);
+    return id;
+});
+
 const vehicleSlice = createSlice({
     name: 'vehicles',
     initialState,
@@ -38,6 +43,9 @@ const vehicleSlice = createSlice({
             })
             .addCase(createVehicle.fulfilled, (state, action: PayloadAction<Vehicle>) => {
                 state.list.push(action.payload);
+            })
+            .addCase(deleteVehicle.fulfilled, (state, action: PayloadAction<number>) => {
+                state.list = state.list.filter(v => v.id !== action.payload);
             });
     },
 });

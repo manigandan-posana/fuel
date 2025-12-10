@@ -32,4 +32,16 @@ public class VehicleController {
         User user = userService.syncUser(principal);
         return vehicleService.createVehicle(vehicleDTO, user);
     }
+
+    @PutMapping("/{id}")
+    public VehicleDTO updateVehicle(@PathVariable Long id, @RequestBody VehicleDTO vehicleDTO, @AuthenticationPrincipal Jwt principal) {
+        User user = userService.syncUser(principal);
+        return vehicleService.updateVehicle(id, vehicleDTO, user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteVehicle(@PathVariable Long id, @AuthenticationPrincipal Jwt principal) {
+        User user = userService.syncUser(principal);
+        vehicleService.deleteVehicle(id, user);
+    }
 }

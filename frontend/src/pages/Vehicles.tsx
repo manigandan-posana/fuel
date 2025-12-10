@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store/store';
-import { fetchVehicles, createVehicle } from '../store/slices/vehicleSlice';
+import { fetchVehicles, createVehicle, deleteVehicle } from '../store/slices/vehicleSlice';
 import { fetchProjects } from '../store/slices/projectSlice';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -9,6 +9,8 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
+import { confirmDialog } from 'primereact/confirmdialog';
+import { ConfirmDialog } from 'primereact/confirmdialog';
 import type { Vehicle } from '../types';
 
 const Vehicles = () => {
@@ -51,6 +53,17 @@ const Vehicles = () => {
         setSelectedProject(null);
     };
 
+    const handleDelete = (vehicle: Vehicle) => {
+        confirmDialog({
+            message: `Are you sure you want to delete vehicle ${vehicle.plateNumber}?`,
+            header: 'Confirm Delete',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                dispatch(deleteVehicle(vehicle.id));
+            },
+        });
+    };
+
     const renderMobileCard = (vehicle: Vehicle) => (
         <div key={vehicle.id} className="data-card">
             <div className="data-card-header">
@@ -72,12 +85,22 @@ const Vehicles = () => {
                         <span className="data-card-value">{vehicle.projectName}</span>
                     </div>
                 )}
+                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                        icon="pi pi-trash"
+                        className="p-button-danger p-button-sm"
+                        onClick={() => handleDelete(vehicle)}
+                        tooltip="Delete"
+                        tooltipOptions={{ position: 'top' }}
+                    />
+                </div>
             </div>
         </div>
     );
 
     return (
         <div>
+            <ConfirmDialog />
             <div className="page-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                     <div>
@@ -109,6 +132,19 @@ const Vehicles = () => {
                     <Column field="model" header="Model" sortable></Column>
                     <Column field="driverName" header="Driver Name" sortable></Column>
                     {user?.role === 'ADMIN' && <Column field="projectName" header="Project" sortable></Column>}
+                    <Column
+                        body={(vehicle: Vehicle) => (
+                            <Button
+                                icon="pi pi-trash"
+                                className="p-button-danger p-button-sm"
+                                onClick={() => handleDelete(vehicle)}
+                                tooltip="Delete"
+                                tooltipOptions={{ position: 'top' }}
+                            />
+                        )}
+                        header="Actions"
+                        style={{ width: '100px', textAlign: 'center' }}
+                    ></Column>
                 </DataTable>
             )}
 

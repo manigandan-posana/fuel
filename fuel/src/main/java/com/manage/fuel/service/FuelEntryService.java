@@ -54,6 +54,48 @@ public class FuelEntryService {
         }
     }
 
+    public FuelEntryDTO updateEntry(Long id, FuelEntryDTO dto, User user) {
+        FuelEntry entry = fuelEntryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Fuel entry not found"));
+        
+        // Check permissions
+        if (user.getRole() != UserRole.ADMIN) {
+            if (user.getProject() == null || 
+                !user.getProject().getId().equals(entry.getVehicle().getProject().getId())) {
+                throw new RuntimeException("Access Denied: You cannot modify entries outside your project.");
+            }
+        }
+        
+        entry.setDate(dto.getDate());
+        entry.setAmount(dto.getAmount());
+        entry.setCost(dto.getCost());
+        entry.setOdometerReading(dto.getOdometerReading());
+        
+        // Allow changing vehicle if admin
+        if (user.getRole() == UserRole.ADMIN && dto.getVehicleId() != null) {
+            Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
+                    .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+            entry.setVehicle(vehicle);
+        }
+        
+        return mapToDTO(fuelEntryRepository.save(entry));
+    }
+
+    public void deleteEntry(Long id, User user) {
+        FuelEntry entry = fuelEntryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Fuel entry not found"));
+        
+        // Check permissions
+        if (user.getRole() != UserRole.ADMIN) {
+            if (user.getProject() == null || 
+                !user.getProject().getId().equals(entry.getVehicle().getProject().getId())) {
+                throw new RuntimeException("Access Denied: You cannot delete entries outside your project.");
+            }
+        }
+        
+        fuelEntryRepository.delete(entry);
+    }
+
     private FuelEntryDTO mapToDTO(FuelEntry entry) {
         FuelEntryDTO dto = new FuelEntryDTO();
         dto.setId(entry.getId());

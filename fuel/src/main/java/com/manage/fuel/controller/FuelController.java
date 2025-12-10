@@ -32,4 +32,16 @@ public class FuelController {
         User user = userService.syncUser(principal);
         return fuelEntryService.createEntry(dto, user);
     }
+
+    @PutMapping("/{id}")
+    public FuelEntryDTO updateEntry(@PathVariable Long id, @RequestBody FuelEntryDTO dto, @AuthenticationPrincipal Jwt principal) {
+        User user = userService.syncUser(principal);
+        return fuelEntryService.updateEntry(id, dto, user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteEntry(@PathVariable Long id, @AuthenticationPrincipal Jwt principal) {
+        User user = userService.syncUser(principal);
+        fuelEntryService.deleteEntry(id, user);
+    }
 }

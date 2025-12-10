@@ -23,6 +23,11 @@ export const createFuelEntry = createAsyncThunk('fuel/createEntry', async (entry
     return response.data;
 });
 
+export const deleteFuelEntry = createAsyncThunk('fuel/deleteEntry', async (id: number) => {
+    await api.delete(`/fuel/${id}`);
+    return id;
+});
+
 const fuelSlice = createSlice({
     name: 'fuel',
     initialState,
@@ -38,6 +43,9 @@ const fuelSlice = createSlice({
             })
             .addCase(createFuelEntry.fulfilled, (state, action: PayloadAction<FuelEntry>) => {
                 state.list.push(action.payload);
+            })
+            .addCase(deleteFuelEntry.fulfilled, (state, action: PayloadAction<number>) => {
+                state.list = state.list.filter(e => e.id !== action.payload);
             });
     },
 });

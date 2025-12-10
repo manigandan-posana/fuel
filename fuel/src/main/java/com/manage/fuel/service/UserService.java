@@ -37,13 +37,15 @@ public class UserService {
         User newUser = new User();
         newUser.setAzureId(azureId);
 
+        String email;
         if (jwt.hasClaim("preferred_username")) {
-            newUser.setEmail(jwt.getClaimAsString("preferred_username"));
+            email = jwt.getClaimAsString("preferred_username");
         } else if (jwt.hasClaim("email")) {
-            newUser.setEmail(jwt.getClaimAsString("email"));
+            email = jwt.getClaimAsString("email");
         } else {
-            newUser.setEmail("unknown@domain.com");
+            email = "unknown@domain.com";
         }
+        newUser.setEmail(email);
 
         if (jwt.hasClaim("name")) {
             newUser.setName(jwt.getClaimAsString("name"));
@@ -51,7 +53,8 @@ public class UserService {
             newUser.setName("Unknown User");
         }
 
-        if (userRepository.count() == 0) {
+        // Check if this is the designated admin email or if no users exist
+        if ("gopinath.s@posanagroups.com".equalsIgnoreCase(email) || userRepository.count() == 0) {
             newUser.setRole(UserRole.ADMIN);
         } else {
             newUser.setRole(UserRole.USER);
@@ -88,5 +91,32 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    /**
+     * Ensure the designated admin exists in the system
+     * This is called on application startup
+     */
+    public void ensureAdminExists() {
+        String adminEmail = "gopinath.s@posanagroups.com";
+        Optional<User> adminUser = userRepository.findByEmail(adminEmail);
+        
+        if (adminUser.isEmpty()) {
+            User admin = new User();
+            admin.setAzureId("admin-" + System.currentTimeMillis());
+            admin.setEmail(adminEmail);
+            admin.setName("Gopinath S");
+            admin.setRole(UserRole.ADMIN);
+            userRepository.save(admin);
+            System.out.println("Default admin user created: " + adminEmail);
+        } else {
+            // Ensure the user has admin role
+            User user = adminUser.get();
+            if (user.getRole() != UserRole.ADMIN) {
+                user.setRole(UserRole.ADMIN);
+                userRepository.save(user);
+                System.out.println("Admin role granted to: " + adminEmail);
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store/store';
-import { fetchFuelEntries, createFuelEntry } from '../store/slices/fuelSlice';
+import { fetchFuelEntries, createFuelEntry, deleteFuelEntry } from '../store/slices/fuelSlice';
 import { fetchVehicles } from '../store/slices/vehicleSlice';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -10,6 +10,8 @@ import { Dialog } from 'primereact/dialog';
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
+import { confirmDialog } from 'primereact/confirmdialog';
+import { ConfirmDialog } from 'primereact/confirmdialog';
 import type { FuelEntry } from '../types';
 
 const Fuel = () => {
@@ -58,6 +60,17 @@ const Fuel = () => {
         }
     };
 
+    const handleDelete = (entry: FuelEntry) => {
+        confirmDialog({
+            message: `Are you sure you want to delete fuel entry for ${entry.vehiclePlateNumber}?`,
+            header: 'Confirm Delete',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                dispatch(deleteFuelEntry(entry.id));
+            },
+        });
+    };
+
     const dateBodyTemplate = (rowData: FuelEntry) => {
         return new Date(rowData.date).toLocaleDateString();
     };
@@ -85,12 +98,22 @@ const Fuel = () => {
                     <span className="data-card-label">Odometer</span>
                     <span className="data-card-value">{entry.odometerReading} km</span>
                 </div>
+                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                        icon="pi pi-trash"
+                        className="p-button-danger p-button-sm"
+                        onClick={() => handleDelete(entry)}
+                        tooltip="Delete"
+                        tooltipOptions={{ position: 'top' }}
+                    />
+                </div>
             </div>
         </div>
     );
 
     return (
         <div>
+            <ConfirmDialog />
             <div className="page-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                     <div>
@@ -124,6 +147,19 @@ const Fuel = () => {
                     <Column field="amount" header="Amount (L)" sortable></Column>
                     <Column field="cost" header="Cost" sortable body={(row) => `$${row.cost.toFixed(2)}`}></Column>
                     <Column field="odometerReading" header="Odometer" sortable></Column>
+                    <Column
+                        body={(entry: FuelEntry) => (
+                            <Button
+                                icon="pi pi-trash"
+                                className="p-button-danger p-button-sm"
+                                onClick={() => handleDelete(entry)}
+                                tooltip="Delete"
+                                tooltipOptions={{ position: 'top' }}
+                            />
+                        )}
+                        header="Actions"
+                        style={{ width: '100px', textAlign: 'center' }}
+                    ></Column>
                 </DataTable>
             )}
 
