@@ -1,0 +1,77 @@
+package com.manage.fuel.service;
+
+import com.manage.fuel.dto.VehicleDTO;
+import com.manage.fuel.model.Project;
+import com.manage.fuel.model.User;
+import com.manage.fuel.model.UserRole;
+import com.manage.fuel.model.Vehicle;
+import com.manage.fuel.repository.ProjectRepository;
+import com.manage.fuel.repository.VehicleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class VehicleService {
+
+    @Autowired
+    private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
+
+    public VehicleDTO createVehicle(VehicleDTO dto, User currentUser) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setPlateNumber(dto.getPlateNumber());
+        vehicle.setModel(dto.getModel());
+        vehicle.setDriverName(dto.getDriverName());
+
+        // Assign Project
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            // Admin must specify project in DTO or it might be null (error?)
+            // Let's assume Admin specifies it.
+            if (dto.getProjectId() != null) {
+                Project p = projectRepository.findById(dto.getProjectId())
+                        .orElseThrow(() -> new RuntimeException("Project not found"));
+                vehicle.setProject(p);
+            } else {
+                 throw new RuntimeException("Admin must specify project ID");
+            }
+        } else {
+            // Manager: Assign to Manager's project
+            if (currentUser.getProject() == null) {
+                throw new RuntimeException("Manager is not assigned to any project.");
+            }
+            vehicle.setProject(currentUser.getProject());
+        }
+
+        return mapToDTO(vehicleRepository.save(vehicle));
+    }
+
+    public List<VehicleDTO> getVehicles(User user) {
+        if (user.getRole() == UserRole.ADMIN) {
+            return vehicleRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
+        } else {
+             if (user.getProject() == null) {
+                return List.of();
+            }
+            return vehicleRepository.findByProjectId(user.getProject().getId()).stream()
+                    .map(this::mapToDTO).collect(Collectors.toList());
+        }
+    }
+
+    private VehicleDTO mapToDTO(Vehicle vehicle) {
+        VehicleDTO dto = new VehicleDTO();
+        dto.setId(vehicle.getId());
+        dto.setPlateNumber(vehicle.getPlateNumber());
+        dto.setModel(vehicle.getModel());
+        dto.setDriverName(vehicle.getDriverName());
+        if (vehicle.getProject() != null) {
+            dto.setProjectId(vehicle.getProject().getId());
+            dto.setProjectName(vehicle.getProject().getName());
+        }
+        return dto;
+    }
+}
