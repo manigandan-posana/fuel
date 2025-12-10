@@ -21,7 +21,11 @@ const Layout = ({ children }: LayoutProps) => {
         { path: '/', icon: 'pi-home', label: 'Dashboard' },
         { path: '/vehicles', icon: 'pi-car', label: 'Vehicles' },
         { path: '/fuel', icon: 'pi-chart-line', label: 'Fuel Entries' },
-        ...(user?.role === 'ADMIN' ? [{ path: '/projects', icon: 'pi-building', label: 'Projects' }] : [])
+        { path: '/today', icon: 'pi-calendar', label: "Today's Entries" },
+        ...(user?.role === 'ADMIN' ? [
+            { path: '/projects', icon: 'pi-building', label: 'Projects' },
+            { path: '/users', icon: 'pi-users', label: 'User Management' }
+        ] : [])
     ];
 
     const handleLogout = () => {

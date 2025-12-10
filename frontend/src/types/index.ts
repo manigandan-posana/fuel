@@ -1,34 +1,39 @@
-// Type definitions for the application
+// Type definitions matching backend DTOs
 
-export type ProjectId = "Project A" | "Project B";
-export type FuelType = "Petrol" | "Diesel" | "Electric";
-export type VehicleType =
-  | "Own Vehicle"
-  | "Rent – Monthly"
-  | "Rent – Daily"
-  | "Rent – Hourly";
+export type UserRole = "ADMIN" | "USER";
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: UserRole;
+  projectId?: number;
+  projectName?: string;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+  location: string;
+}
 
 export interface Vehicle {
-  id: string;
-  projectId: ProjectId;
-  vehicleName: string;
-  vehicleNumber: string;
-  vehicleType: VehicleType;
-  fuelType: FuelType;
+  id: number;
+  plateNumber: string;
+  model: string;
+  driverName: string;
+  projectId?: number;
+  projectName?: string;
 }
 
 export interface FuelEntry {
-  id: string;
-  date: Date;
-  projectId: ProjectId;
-  vehicleId: string;
-  vehicleName: string;
-  fuelType: FuelType;
-  litres: number;
-  openingKm: number;
-  closingKm: number;
-  distance: number;
-  mileage: number;
-  openingKmPhoto?: string;
-  closingKmPhoto?: string;
+  id: number;
+  date: string;
+  amount: number;
+  cost: number;
+  odometerReading: number;
+  vehicleId: number;
+  vehiclePlateNumber: string;
+  driverId: number;
+  driverName: string;
 }

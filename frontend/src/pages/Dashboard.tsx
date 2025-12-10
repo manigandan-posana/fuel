@@ -1,35 +1,61 @@
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useMemo } from 'react';
+import type { RootState, AppDispatch } from '../store/store';
+import { fetchVehicles } from '../store/slices/vehicleSlice';
+import { fetchFuelEntries } from '../store/slices/fuelSlice';
+import { fetchProjects } from '../store/slices/projectSlice';
+import { Card } from 'primereact/card';
 
 const Dashboard = () => {
+    const dispatch = useDispatch<AppDispatch>();
     const user = useSelector((state: RootState) => state.auth.user);
+    const { list: vehicles } = useSelector((state: RootState) => state.vehicles);
+    const { list: fuelEntries } = useSelector((state: RootState) => state.fuel);
+    const { list: projects } = useSelector((state: RootState) => state.projects);
+
+    useEffect(() => {
+        dispatch(fetchVehicles());
+        dispatch(fetchFuelEntries());
+        if (user?.role === 'ADMIN') {
+            dispatch(fetchProjects());
+        }
+    }, [dispatch, user]);
+
+    const todayEntries = useMemo(() => {
+        const today = new Date().toDateString();
+        return fuelEntries.filter((e) => new Date(e.date).toDateString() === today);
+    }, [fuelEntries]);
+
+    const totalCost = useMemo(() => {
+        return fuelEntries.reduce((sum, e) => sum + (e.cost || 0), 0);
+    }, [fuelEntries]);
 
     const stats = [
         {
             title: 'Total Vehicles',
-            value: '0',
+            value: vehicles.length.toString(),
             icon: 'pi-car',
             color: '#10b981',
             bgColor: '#d1fae5'
         },
         {
             title: 'Fuel Entries',
-            value: '0',
+            value: fuelEntries.length.toString(),
             icon: 'pi-chart-line',
             color: '#3b82f6',
             bgColor: '#dbeafe'
         },
         {
             title: 'Total Cost',
-            value: '$0.00',
+            value: `$${totalCost.toFixed(2)}`,
             icon: 'pi-dollar',
             color: '#f59e0b',
             bgColor: '#fef3c7'
         },
         {
-            title: 'Active Projects',
-            value: '0',
-            icon: 'pi-building',
+            title: user?.role === 'ADMIN' ? 'Active Projects' : "Today's Entries",
+            value: user?.role === 'ADMIN' ? projects.length.toString() : todayEntries.length.toString(),
+            icon: user?.role === 'ADMIN' ? 'pi-building' : 'pi-calendar',
             color: '#8b5cf6',
             bgColor: '#ede9fe'
         }
