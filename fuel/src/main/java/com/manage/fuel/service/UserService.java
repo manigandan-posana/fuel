@@ -22,6 +22,11 @@ public class UserService {
     private ProjectRepository projectRepository;
 
     public User syncUser(Jwt jwt) {
+        // Development mode: If no JWT, return a mock/development user
+        if (jwt == null) {
+            return getOrCreateDevelopmentUser();
+        }
+
         String azureId = jwt.getSubject();
         Optional<User> existingUser = userRepository.findByAzureId(azureId);
 
@@ -31,7 +36,7 @@ public class UserService {
 
         User newUser = new User();
         newUser.setAzureId(azureId);
-        
+
         if (jwt.hasClaim("preferred_username")) {
             newUser.setEmail(jwt.getClaimAsString("preferred_username"));
         } else if (jwt.hasClaim("email")) {
@@ -54,10 +59,29 @@ public class UserService {
 
         return userRepository.save(newUser);
     }
-    
+
+    // Get or create a development user for testing without Azure AD
+    private User getOrCreateDevelopmentUser() {
+        Optional<User> devUser = userRepository.findByEmail("dev@example.com");
+
+        if (devUser.isPresent()) {
+            return devUser.get();
+        }
+
+        // Create a new development user
+        User newDevUser = new User();
+        newDevUser.setAzureId("dev-user-id");
+        newDevUser.setEmail("dev@example.com");
+        newDevUser.setName("Development User");
+        newDevUser.setRole(UserRole.ADMIN);
+
+        return userRepository.save(newDevUser);
+    }
+
     public User assignProject(Long userId, Long projectId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
         user.setProject(project);
         return userRepository.save(user);
     }

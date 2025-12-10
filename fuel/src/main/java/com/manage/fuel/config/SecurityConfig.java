@@ -11,21 +11,23 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+// @EnableMethodSecurity // Disabled for development - re-enable for production
+// with Azure AD
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configure(http))
-            .csrf(csrf -> csrf.disable()) // Stateless API
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/public/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-            );
+                .cors(cors -> cors.configure(http))
+                .csrf(csrf -> csrf.disable()) // Stateless API
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Allow all requests for development
+                );
+        // OAuth2 Resource Server disabled for development
+        // Uncomment below when Azure AD is configured
+        // .oauth2ResourceServer(oauth2 -> oauth2
+        // .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+        // );
 
         return http.build();
     }

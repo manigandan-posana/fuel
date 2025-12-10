@@ -21,10 +21,11 @@ public class AuthController {
 
     @GetMapping("/me")
     public UserDTO getCurrentUser(@AuthenticationPrincipal Jwt principal) {
+        // UserService handles null JWT for development mode
         User user = userService.syncUser(principal);
         return mapToDTO(user);
     }
-    
+
     @GetMapping("/users")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')") // Only admin can list users
     public List<UserDTO> getAllUsers() {

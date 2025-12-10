@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import { api } from '../../services/api';
-import { Project } from '../../types';
+import type { Project } from '../../types';
 
 interface ProjectState {
     list: Project[];

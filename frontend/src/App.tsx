@@ -4,7 +4,7 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginRequest } from './authConfig';
 import { syncUser } from './store/slices/authSlice';
-import { AppDispatch, RootState } from './store/store';
+import type { AppDispatch, RootState } from './store/store';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';

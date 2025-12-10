@@ -1,74 +1,107 @@
-import React from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menubar } from 'primereact/menubar';
-import { Button } from 'primereact/button';
 import { useMsal } from '@azure/msal-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
-import { RootState } from '../store/store';
+import type { RootState } from '../store/store';
 
 interface LayoutProps {
     children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout = ({ children }: LayoutProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { instance } = useMsal();
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const items = [
-        {
-            label: 'Dashboard',
-            icon: 'pi pi-fw pi-home',
-            command: () => navigate('/')
-        },
-        {
-            label: 'Vehicles',
-            icon: 'pi pi-fw pi-car',
-            command: () => navigate('/vehicles')
-        },
-        {
-            label: 'Fuel Entries',
-            icon: 'pi pi-fw pi-dollar',
-            command: () => navigate('/fuel')
-        }
+    const menuItems = [
+        { path: '/', icon: 'pi-home', label: 'Dashboard' },
+        { path: '/vehicles', icon: 'pi-car', label: 'Vehicles' },
+        { path: '/fuel', icon: 'pi-chart-line', label: 'Fuel Entries' },
+        ...(user?.role === 'ADMIN' ? [{ path: '/projects', icon: 'pi-building', label: 'Projects' }] : [])
     ];
 
-    if (user?.role === 'ADMIN') {
-        items.push({
-            label: 'Projects',
-            icon: 'pi pi-fw pi-building',
-            command: () => navigate('/projects')
-        });
-    }
+    const handleLogout = () => {
+        dispatch(logout());
+        instance.logoutRedirect();
+    };
 
-    const start = <h2 className="m-0 mr-4 text-primary">FuelApp</h2>;
-
-    const end = (
-        <div className="flex align-items-center gap-2">
-            {user && (
-                <div className="flex flex-column align-items-end mr-2">
-                    <span className="font-bold">{user.name}</span>
-                    <span className="text-xs text-500">{user.role} {user.projectName ? `- ${user.projectName}` : ''}</span>
-                </div>
-            )}
-            <Button label="Logout" icon="pi pi-power-off" severity="danger" text onClick={() => {
-                dispatch(logout());
-                instance.logoutRedirect();
-            }} />
-        </div>
-    );
+    const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div className="min-h-screen flex flex-column surface-ground">
-            <Menubar model={items} start={start} end={end} className="border-none border-noround shadow-2" />
-            <div className="p-4 flex-grow-1">
-                <div className="surface-card p-4 shadow-2 border-round h-full">
+        <div className="app-container">
+            {/* Desktop Sidebar */}
+            <aside className="sidebar">
+                <div className="sidebar-header">
+                    <i className="pi pi-bolt sidebar-logo-icon"></i>
+                    <h2 className="sidebar-title">FuelTrack</h2>
+                </div>
+
+                <nav className="sidebar-nav">
+                    {menuItems.map((item) => (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className={`sidebar-nav-item ${isActive(item.path) ? 'active' : ''}`}
+                        >
+                            <i className={`pi ${item.icon}`}></i>
+                            <span>{item.label}</span>
+                        </button>
+                    ))}
+                </nav>
+
+                <div className="sidebar-footer">
+                    <div className="user-info">
+                        <div className="user-avatar">
+                            <i className="pi pi-user"></i>
+                        </div>
+                        <div className="user-details">
+                            <div className="user-name">{user?.name || 'User'}</div>
+                            <div className="user-role">{user?.role || 'Guest'}</div>
+                        </div>
+                    </div>
+                    <button onClick={handleLogout} className="logout-btn">
+                        <i className="pi pi-sign-out"></i>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="main-content">
+                <div className="content-wrapper">
                     {children}
                 </div>
-            </div>
+            </main>
+
+            {/* Mobile Bottom Navigation */}
+            <nav className="bottom-nav">
+                {menuItems.map((item) => (
+                    <button
+                        key={item.path}
+                        onClick={() => navigate(item.path)}
+                        className={`bottom-nav-item ${isActive(item.path) ? 'active' : ''}`}
+                    >
+                        <i className={`pi ${item.icon}`}></i>
+                        <span>{item.label}</span>
+                    </button>
+                ))}
+            </nav>
+
+            {/* Mobile Header */}
+            <header className="mobile-header">
+                <div className="mobile-header-content">
+                    <div className="mobile-logo">
+                        <i className="pi pi-bolt"></i>
+                        <span>FuelTrack</span>
+                    </div>
+                    <button onClick={handleLogout} className="mobile-logout">
+                        <i className="pi pi-sign-out"></i>
+                    </button>
+                </div>
+            </header>
         </div>
     );
 };
