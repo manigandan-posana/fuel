@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/auth/me").authenticated()  // Allow JWT auth without role
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -61,8 +62,8 @@ public class SecurityConfig {
         @Override
         public Collection<GrantedAuthority> convert(Jwt jwt) {
             try {
-                // Extract Azure ID from JWT
-                String azureId = jwt.getSubject();
+                // Extract Azure ID from JWT - try 'oid' first (Azure AD object ID), then 'sub'
+                String azureId = jwt.hasClaim("oid") ? jwt.getClaimAsString("oid") : jwt.getSubject();
                 
                 // Extract email as fallback
                 String email = null;
@@ -75,7 +76,7 @@ public class SecurityConfig {
                 // Try to find user by Azure ID first
                 Optional<User> userOptional = userRepository.findByAzureId(azureId);
                 
-                // If not found by Azure ID, try by email
+                // If not found by Azure ID, try by email (for pre-created users)
                 if (userOptional.isEmpty() && email != null) {
                     userOptional = userRepository.findByEmail(email);
                 }
@@ -83,13 +84,17 @@ public class SecurityConfig {
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
                     String role = "ROLE_" + user.getRole().name();
+                    System.out.println("Assigned role " + role + " to user: " + email);
                     return Collections.singletonList(new SimpleGrantedAuthority(role));
                 }
 
-                // If user not found, return empty authorities (will be handled by UserService)
+                // If user not found, return empty authorities
+                // The /api/auth/me endpoint will sync/create the user
+                System.out.println("User not found in database (Azure ID: " + azureId + ", Email: " + email + "), will be synced via /api/auth/me");
                 return Collections.emptyList();
             } catch (Exception e) {
                 System.err.println("Error converting JWT to authorities: " + e.getMessage());
+                e.printStackTrace();
                 return Collections.emptyList();
             }
         }

@@ -27,7 +27,8 @@ public class UserService {
             return getOrCreateDevelopmentUser();
         }
 
-        String azureId = jwt.getSubject();
+        // Extract Azure ID - try 'oid' first (Azure AD object ID), then 'sub'
+        String azureId = jwt.hasClaim("oid") ? jwt.getClaimAsString("oid") : jwt.getSubject();
         Optional<User> existingUser = userRepository.findByAzureId(azureId);
 
         if (existingUser.isPresent()) {
