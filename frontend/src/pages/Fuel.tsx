@@ -25,7 +25,7 @@ const Fuel = () => {
     const [displayDialog, setDisplayDialog] = useState(false);
     const [newEntry, setNewEntry] = useState<Partial<FuelEntry>>({
         date: new Date().toISOString(),
-        litres: 10,
+        litres: undefined,
         openingKm: 0,
         closingKm: 0,
         fuelPrice: 100
@@ -86,7 +86,7 @@ const Fuel = () => {
             setDisplayDialog(false);
             setNewEntry({
                 date: new Date().toISOString(),
-                litres: 10,
+                litres: undefined,
                 openingKm: 0,
                 closingKm: 0,
                 fuelPrice: 100
@@ -280,11 +280,43 @@ const Fuel = () => {
                         />
                     </div>
 
+                    {/* Current Fuel Level Display */}
                     {selectedVehicle && (
-                        <div style={{ padding: '12px', background: '#f0f9ff', borderRadius: '8px', fontSize: '13px' }}>
-                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>Vehicle Info</div>
-                            <div>Driver: {selectedVehicle.driverName} • Type: {selectedVehicle.vehicleType}</div>
-                            <div>Rated Mileage: {selectedVehicle.mileage} {getMileageLabel(selectedVehicle.fuelType)}</div>
+                        <div style={{ 
+                            padding: '16px', 
+                            background: selectedVehicle.fuelLevel && selectedVehicle.fuelLevel < 10 ? '#fef2f2' : 
+                                       selectedVehicle.fuelLevel && selectedVehicle.fuelLevel < 20 ? '#fff7ed' : '#f0fdf4',
+                            border: `2px solid ${selectedVehicle.fuelLevel && selectedVehicle.fuelLevel < 10 ? '#fca5a5' : 
+                                                 selectedVehicle.fuelLevel && selectedVehicle.fuelLevel < 20 ? '#fdba74' : '#86efac'}`,
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '12px'
+                        }}>
+                            <div>
+                                <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, marginBottom: '4px' }}>
+                                    Current Fuel Level
+                                </div>
+                                <div style={{ fontSize: '28px', fontWeight: 700, color: selectedVehicle.fuelLevel && selectedVehicle.fuelLevel < 10 ? '#dc2626' : 
+                                             selectedVehicle.fuelLevel && selectedVehicle.fuelLevel < 20 ? '#ea580c' : '#16a34a' }}>
+                                    {selectedVehicle.fuelLevel != null ? selectedVehicle.fuelLevel.toFixed(2) : '0.00'} {selectedVehicle.fuelType === 'Electric' ? 'units' : 'L'}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                                    {selectedVehicle.vehicleName} • {selectedVehicle.vehicleNo}
+                                </div>
+                            </div>
+                            <div style={{ 
+                                padding: '8px 16px', 
+                                background: '#fff', 
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                color: '#475569'
+                            }}>
+                                <div style={{ fontWeight: 600, marginBottom: '2px' }}>Rated Mileage</div>
+                                <div>{selectedVehicle.mileage} {getMileageLabel(selectedVehicle.fuelType)}</div>
+                            </div>
                         </div>
                     )}
 
@@ -354,65 +386,7 @@ const Fuel = () => {
                         </div>
                     </div>
 
-                    {/* Audit Stats Preview */}
-                    {auditStats && (
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginTop: '8px' }}>
-                            {/* Trip Summary */}
-                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                                <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#334155' }}>Trip Summary</h3>
-                                <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Distance:</span>
-                                        <span style={{ fontWeight: 600 }}>{auditStats.distance.toFixed(2)} km</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Expected {getUnitLabel(selectedVehicle?.fuelType)}:</span>
-                                        <span style={{ fontWeight: 600 }}>{auditStats.expectedLitres.toFixed(2)}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Actual {getUnitLabel(selectedVehicle?.fuelType)}:</span>
-                                        <span style={{ fontWeight: 600 }}>{newEntry.litres?.toFixed(2)}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Effective Mileage:</span>
-                                        <span style={{ fontWeight: 600 }}>{auditStats.effectiveMileage.toFixed(2)} {getMileageLabel(selectedVehicle?.fuelType)}</span>
-                                    </div>
-                                </div>
-                                {auditStats.isSuspicious ? (
-                                    <div style={{ marginTop: '12px', padding: '8px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', fontSize: '11px', color: '#991b1b' }}>
-                                        <strong>⚠ Suspicious:</strong> Effective mileage is much lower than rated. Extra fuel may have been used for personal trips.
-                                    </div>
-                                ) : (
-                                    <div style={{ marginTop: '12px', padding: '8px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '11px', color: '#166534' }}>
-                                        <strong>✓ Normal:</strong> Usage looks reasonable for this trip.
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Cost Comparison */}
-                            <div style={{ padding: '16px', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
-                                <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#1e40af' }}>Cost Comparison</h3>
-                                <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#475569' }}>Price per {getUnitLabel(selectedVehicle?.fuelType).toLowerCase()}:</span>
-                                        <span style={{ fontWeight: 600 }}>₹{newEntry.fuelPrice?.toFixed(2)}</span>
-                                    </div>
-                                    <div style={{ borderTop: '1px solid #dbeafe', margin: '6px 0' }}></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#475569' }}>Driver Bill Amount:</span>
-                                        <span style={{ fontWeight: 600, fontSize: '14px' }}>₹{auditStats.driverBillAmount.toFixed(2)}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#16a34a', fontWeight: 600 }}>You Should Pay:</span>
-                                        <span style={{ fontWeight: 700, fontSize: '16px', color: '#16a34a' }}>₹{auditStats.recommendedPayAmount.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <div style={{ marginTop: '12px', padding: '8px', background: '#fff', borderRadius: '6px', fontSize: '11px', color: '#475569' }}>
-                                    <strong>Tip:</strong> Pay for expected {getUnitLabel(selectedVehicle?.fuelType).toLowerCase()} (optionally add 10-15% buffer). Extra fuel can be considered for next trip.
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                     <Button
                         label="Save Fuel Entry"

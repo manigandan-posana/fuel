@@ -92,10 +92,16 @@ public class FuelEntryService {
         // Calculate remaining fuel: filled - consumed
         double remainingFuel = litresFilled - litresConsumed;
         
-        // Update vehicle's fuel level
+        // Update vehicle's fuel level by adding the net change
         Double currentFuelLevel = vehicle.getFuelLevel() != null ? vehicle.getFuelLevel() : 0.0;
-        vehicle.setFuelLevel(currentFuelLevel + remainingFuel);
+        double newFuelLevel = currentFuelLevel + remainingFuel;
         
+        // Ensure fuel level doesn't go negative
+        if (newFuelLevel < 0) {
+            newFuelLevel = 0.0;
+        }
+        
+        vehicle.setFuelLevel(newFuelLevel);
         vehicleRepository.save(vehicle);
     }
 
