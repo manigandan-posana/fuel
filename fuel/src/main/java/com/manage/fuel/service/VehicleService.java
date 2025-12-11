@@ -118,6 +118,7 @@ public class VehicleService {
         dto.setVehicleType(vehicle.getVehicleType());
         dto.setFuelType(vehicle.getFuelType());
         dto.setMileage(vehicle.getMileage());
+        dto.setFuelLevel(vehicle.getFuelLevel() != null ? vehicle.getFuelLevel() : 0.0);
         if (vehicle.getProject() != null) {
             dto.setProjectId(vehicle.getProject().getId());
             dto.setProjectName(vehicle.getProject().getName());

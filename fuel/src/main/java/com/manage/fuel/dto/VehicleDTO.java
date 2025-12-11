@@ -8,6 +8,7 @@ public class VehicleDTO {
     private String vehicleType;
     private String fuelType;
     private Double mileage;
+    private Double fuelLevel; // Current fuel level in litres
     private Long projectId;
     private String projectName;
     
@@ -37,6 +38,9 @@ public class VehicleDTO {
 
     public Double getMileage() { return mileage; }
     public void setMileage(Double mileage) { this.mileage = mileage; }
+
+    public Double getFuelLevel() { return fuelLevel; }
+    public void setFuelLevel(Double fuelLevel) { this.fuelLevel = fuelLevel; }
 
     public Long getProjectId() { return projectId; }
     public void setProjectId(Long projectId) { this.projectId = projectId; }

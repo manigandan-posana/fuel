@@ -27,6 +27,9 @@ public class Vehicle {
     @Column(name = "mileage")
     private Double mileage; // Vehicle mileage in km/l or km/charge
 
+    @Column(name = "fuel_level")
+    private Double fuelLevel; // Current fuel level in litres (remaining fuel)
+
     // Keep for backward compatibility, will be removed later
     @Column(unique = true)
     private String plateNumber;
@@ -60,6 +63,9 @@ public class Vehicle {
 
     public Double getMileage() { return mileage; }
     public void setMileage(Double mileage) { this.mileage = mileage; }
+
+    public Double getFuelLevel() { return fuelLevel; }
+    public void setFuelLevel(Double fuelLevel) { this.fuelLevel = fuelLevel; }
 
     // Backward compatibility
     public String getPlateNumber() { return plateNumber != null ? plateNumber : vehicleNo; }

@@ -122,6 +122,16 @@ const Vehicles = () => {
                     <span className="data-card-label">Mileage</span>
                     <span className="data-card-value">{vehicle.mileage ? `${vehicle.mileage} km/l` : 'N/A'}</span>
                 </div>
+                <div className="data-card-row">
+                    <span className="data-card-label">Fuel Level</span>
+                    <span className="data-card-value" style={{ 
+                        color: vehicle.fuelLevel && vehicle.fuelLevel < 10 ? '#e74c3c' : 
+                               vehicle.fuelLevel && vehicle.fuelLevel < 20 ? '#f39c12' : '#27ae60',
+                        fontWeight: 600
+                    }}>
+                        {vehicle.fuelLevel != null ? `${vehicle.fuelLevel.toFixed(2)} ${vehicle.fuelType === 'Electric' ? 'units' : 'L'}` : '0.00 L'}
+                    </span>
+                </div>
                 {user?.role === 'ADMIN' && vehicle.projectName && (
                     <div className="data-card-row">
                         <span className="data-card-label">Project</span>
@@ -171,6 +181,20 @@ const Vehicles = () => {
                     <Column field="vehicleType" header="Vehicle Type" sortable></Column>
                     <Column field="fuelType" header="Fuel Type" sortable></Column>
                     <Column field="mileage" header="Mileage" sortable body={(vehicle: Vehicle) => vehicle.mileage ? `${vehicle.mileage} km/l` : 'N/A'}></Column>
+                    <Column 
+                        field="fuelLevel" 
+                        header="Fuel Level" 
+                        sortable 
+                        body={(vehicle: Vehicle) => (
+                            <span style={{ 
+                                color: vehicle.fuelLevel && vehicle.fuelLevel < 10 ? '#e74c3c' : 
+                                       vehicle.fuelLevel && vehicle.fuelLevel < 20 ? '#f39c12' : '#27ae60',
+                                fontWeight: 600
+                            }}>
+                                {vehicle.fuelLevel != null ? `${vehicle.fuelLevel.toFixed(2)} ${vehicle.fuelType === 'Electric' ? 'units' : 'L'}` : '0.00 L'}
+                            </span>
+                        )}
+                    ></Column>
                     {user?.role === 'ADMIN' && <Column field="projectName" header="Project" sortable></Column>}
                     <Column
                         body={(vehicle: Vehicle) => (

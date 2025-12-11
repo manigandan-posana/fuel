@@ -45,6 +45,9 @@ public class FuelEntryService {
         // Calculate audit statistics
         calculateAuditStats(entry, vehicle);
 
+        // Update vehicle fuel level
+        updateVehicleFuelLevel(vehicle, entry.getLitres(), entry.getExpectedLitres());
+
         return mapToDTO(fuelEntryRepository.save(entry));
     }
 
@@ -85,6 +88,17 @@ public class FuelEntryService {
         entry.setIsSuspicious(isSuspicious);
     }
 
+    private void updateVehicleFuelLevel(Vehicle vehicle, double litresFilled, double litresConsumed) {
+        // Calculate remaining fuel: filled - consumed
+        double remainingFuel = litresFilled - litresConsumed;
+        
+        // Update vehicle's fuel level
+        Double currentFuelLevel = vehicle.getFuelLevel() != null ? vehicle.getFuelLevel() : 0.0;
+        vehicle.setFuelLevel(currentFuelLevel + remainingFuel);
+        
+        vehicleRepository.save(vehicle);
+    }
+
     public List<FuelEntryDTO> getEntries(User user) {
         if (user.getRole() == UserRole.ADMIN) {
              return fuelEntryRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
@@ -107,6 +121,11 @@ public class FuelEntryService {
             }
         }
         
+        // Store old values to reverse the fuel level change
+        Vehicle oldVehicle = entry.getVehicle();
+        double oldLitres = entry.getLitres();
+        double oldExpectedLitres = entry.getExpectedLitres() != null ? entry.getExpectedLitres() : 0.0;
+        
         entry.setDate(dto.getDate());
         entry.setLitres(dto.getLitres());
         entry.setOpeningKm(dto.getOpeningKm());
@@ -124,6 +143,12 @@ public class FuelEntryService {
         // Recalculate audit statistics
         calculateAuditStats(entry, vehicle);
         
+        // Reverse old fuel level change from old vehicle
+        updateVehicleFuelLevel(oldVehicle, -oldLitres, -oldExpectedLitres);
+        
+        // Apply new fuel level change to new vehicle
+        updateVehicleFuelLevel(vehicle, entry.getLitres(), entry.getExpectedLitres());
+        
         return mapToDTO(fuelEntryRepository.save(entry));
     }
 
@@ -138,6 +163,12 @@ public class FuelEntryService {
                 throw new RuntimeException("Access Denied: You cannot delete entries outside your project.");
             }
         }
+        
+        // Reverse the fuel level change
+        Vehicle vehicle = entry.getVehicle();
+        double litres = entry.getLitres();
+        double expectedLitres = entry.getExpectedLitres() != null ? entry.getExpectedLitres() : 0.0;
+        updateVehicleFuelLevel(vehicle, -litres, -expectedLitres);
         
         fuelEntryRepository.delete(entry);
     }

@@ -25,6 +25,7 @@ export interface Vehicle {
   vehicleType: 'Own' | 'Monthly Rented' | 'Daily Rented' | 'Hourly Rented';
   fuelType: 'Petrol' | 'Diesel' | 'Electric';
   mileage?: number;
+  fuelLevel?: number; // Current fuel level in litres (remaining fuel)
   projectId?: number;
   projectName?: string;
   // Backward compatibility
