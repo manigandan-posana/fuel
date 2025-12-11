@@ -24,15 +24,20 @@ public class UserService {
     public User syncUser(Jwt jwt) {
         // Development mode: If no JWT, return a mock/development user
         if (jwt == null) {
+            System.out.println("⚠️ No JWT provided, using development user");
             return getOrCreateDevelopmentUser();
         }
 
         // Extract Azure ID - try 'oid' first (Azure AD object ID), then 'sub'
         String azureId = jwt.hasClaim("oid") ? jwt.getClaimAsString("oid") : jwt.getSubject();
+        System.out.println("🔍 Syncing user with Azure ID: " + azureId);
+        
         Optional<User> existingUser = userRepository.findByAzureId(azureId);
 
         if (existingUser.isPresent()) {
-            return existingUser.get();
+            User user = existingUser.get();
+            System.out.println("✅ Found existing user: " + user.getEmail() + " (Role: " + user.getRole() + ")");
+            return user;
         }
 
         // Extract email from JWT
@@ -52,24 +57,31 @@ public class UserService {
             name = "Unknown User";
         }
 
+        System.out.println("📧 Extracted from JWT - Email: " + email + ", Name: " + name);
+
         // Check if user was pre-created by admin
         User preCreatedUser = updateUserOnFirstLogin(email, azureId, name);
         if (preCreatedUser != null) {
+            System.out.println("✅ Updated pre-created user: " + email + " with Azure ID: " + azureId);
             return preCreatedUser;
         }
 
         // Only allow auto-creation for admin email or if no users exist (first user)
         if ("gopinath.s@posanagroups.com".equalsIgnoreCase(email) || userRepository.count() == 0) {
+            System.out.println("✨ Creating new admin user: " + email);
             User newUser = new User();
             newUser.setAzureId(azureId);
             newUser.setEmail(email);
             newUser.setName(name);
             newUser.setRole(UserRole.ADMIN);
-            return userRepository.save(newUser);
+            User savedUser = userRepository.save(newUser);
+            System.out.println("✅ Admin user created successfully with ID: " + savedUser.getId());
+            return savedUser;
         }
 
         // For all other users, they must be created by admin first
-        throw new SecurityException("Access denied. Please contact your administrator to create an account for you.");
+        System.err.println("❌ Access denied for user: " + email + " (Azure ID: " + azureId + ")");
+        throw new SecurityException("Access denied for " + email + ". Please contact your administrator to create an account for you.");
     }
 
     // Get or create a development user for testing without Azure AD

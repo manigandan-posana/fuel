@@ -1,6 +1,6 @@
 import React from "react";
 import { Dropdown } from "primereact/dropdown";
-import type { ProjectId } from "../types";
+import type { ProjectId } from "../types/";
 import { PROJECTS } from "../data/constants";
 
 interface HeaderProps {

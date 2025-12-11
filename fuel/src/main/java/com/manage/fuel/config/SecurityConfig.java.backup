@@ -13,10 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,12 +29,6 @@ public class SecurityConfig {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
-
-    @Value("${spring.security.oauth2.resourceserver.jwt.audiences}")
-    private String audience;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -68,26 +59,21 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        String tenantId = issuerUri.substring(issuerUri.indexOf("/7ba6b92d"), issuerUri.lastIndexOf("/"));
-        tenantId = tenantId.replace("/", "");
-        
-        System.out.println("Configuring JWT Decoder with tenant ID: " + tenantId);
-        System.out.println("Expected audience: " + audience);
-        
-        // Create decoder that accepts both v1.0 and v2.0 tokens
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuerUri);
         
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
-        OAuth2TokenValidator<Jwt> issuerValidator = new AzureIssuerValidator(tenantId);
-        OAuth2TokenValidator<Jwt> withValidators = new DelegatingOAuth2TokenValidator<>(
-                issuerValidator, 
-                audienceValidator,
-                new JwtTimestampValidator()
-        );
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
         
-        jwtDecoder.setJwtValidator(withValidators);
+        jwtDecoder.setJwtValidator(withAudience);
         
         return jwtDecoder;
+    }           )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                );
+
+        return http.build();
     }
 
     @Bean
@@ -119,10 +105,31 @@ public class SecurityConfig {
                 if (userOptional.isEmpty() && email != null) {
                     userOptional = userRepository.findByEmail(email);
                 }
+            }
+        }
+    }
 
-                if (userOptional.isPresent()) {
-                    User user = userOptional.get();
-                    String role = "ROLE_" + user.getRole().name();
+    private static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+        private final String audience;
+
+        AudienceValidator(String audience) {
+            this.audience = audience;
+        }
+
+        public OAuth2TokenValidatorResult validate(Jwt jwt) {
+            if (jwt.getAudience().contains(audience)) {
+                return OAuth2TokenValidatorResult.success();
+            }
+            return OAuth2TokenValidatorResult.failure(
+                    new org.springframework.security.oauth2.core.OAuth2Error(
+                            "invalid_token", 
+                            "The required audience is missing", 
+                            null
+                    )
+            );
+        }
+    }
+}                   String role = "ROLE_" + user.getRole().name();
                     System.out.println("Assigned role " + role + " to user: " + email);
                     return Collections.singletonList(new SimpleGrantedAuthority(role));
                 }
@@ -136,66 +143,6 @@ public class SecurityConfig {
                 e.printStackTrace();
                 return Collections.emptyList();
             }
-        }
-    }
-
-    private static class AzureIssuerValidator implements OAuth2TokenValidator<Jwt> {
-        private final String tenantId;
-
-        AzureIssuerValidator(String tenantId) {
-            this.tenantId = tenantId;
-        }
-
-        public OAuth2TokenValidatorResult validate(Jwt jwt) {
-            String issuer = jwt.getIssuer().toString();
-            System.out.println("Validating issuer: " + issuer);
-            
-            // Accept both v1.0 and v2.0 Azure AD issuers
-            boolean isValid = issuer.equals("https://sts.windows.net/" + tenantId + "/") ||
-                             issuer.equals("https://login.microsoftonline.com/" + tenantId + "/v2.0");
-            
-            if (isValid) {
-                System.out.println("  Issuer validation: SUCCESS");
-                return OAuth2TokenValidatorResult.success();
-            }
-            
-            System.out.println("  Issuer validation: FAILED");
-            return OAuth2TokenValidatorResult.failure(
-                    new OAuth2Error(
-                            "invalid_token",
-                            "Invalid issuer. Expected tenant: " + tenantId + ", Got: " + issuer,
-                            null
-                    )
-            );
-        }
-    }
-
-    private static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
-        private final String audience;
-
-        AudienceValidator(String audience) {
-            this.audience = audience;
-        }
-
-        public OAuth2TokenValidatorResult validate(Jwt jwt) {
-            System.out.println("Validating JWT token:");
-            System.out.println("  Issuer: " + jwt.getIssuer());
-            System.out.println("  Audience: " + jwt.getAudience());
-            System.out.println("  Subject: " + jwt.getSubject());
-            System.out.println("  Expected audience: " + audience);
-            
-            if (jwt.getAudience().contains(audience)) {
-                System.out.println("  Audience validation: SUCCESS");
-                return OAuth2TokenValidatorResult.success();
-            }
-            System.out.println("  Audience validation: FAILED");
-            return OAuth2TokenValidatorResult.failure(
-                    new OAuth2Error(
-                            "invalid_token", 
-                            "The required audience is missing. Expected: " + audience + ", Got: " + jwt.getAudience(), 
-                            null
-                    )
-            );
         }
     }
 }

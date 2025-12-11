@@ -1,5 +1,5 @@
 // Initial data for the application
-import type { ProjectId, VehicleType, FuelType, Vehicle, FuelEntry } from "../types";
+import type { ProjectId, VehicleType, FuelType, Vehicle, FuelEntry } from "../types/";
 
 export const PROJECTS: ProjectId[] = ["Project A", "Project B"];
 

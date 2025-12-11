@@ -8,7 +8,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import toast from "react-hot-toast";
-import type { Vehicle, ProjectId, VehicleType, FuelType } from "../types";
+import type { Vehicle, ProjectId, VehicleType, FuelType } from "../types/";
 import { VEHICLE_TYPES, FUEL_TYPES } from "../data/constants";
 
 interface VehicleManagementProps {

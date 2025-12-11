@@ -1,22 +1,35 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
 import { Chip } from "primereact/chip";
-import type { FuelEntry, ProjectId } from "../types";
+import type { FuelEntry } from "../types/";
+import type { RootState, AppDispatch } from "../store/store";
+import { fetchFuelEntries } from "../store/slices/fuelSlice";
 
-interface TodayEntriesProps {
-    selectedProject: ProjectId;
-    fuelEntries: FuelEntry[];
-}
+const TodayEntries: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const user = useSelector((state: RootState) => state.auth.user);
+    const authStatus = useSelector((state: RootState) => state.auth.status);
+    const authToken = useSelector((state: RootState) => state.auth.token);
+    const { list: fuelEntries } = useSelector((state: RootState) => state.fuel);
 
-const TodayEntries: React.FC<TodayEntriesProps> = ({ selectedProject, fuelEntries }) => {
+    useEffect(() => {
+        // Only fetch data when authentication is complete
+        if (authStatus === 'succeeded' && authToken) {
+            dispatch(fetchFuelEntries());
+        }
+    }, [dispatch, authStatus, authToken]);
+
     const todayEntries = useMemo(() => {
+        if (!fuelEntries || fuelEntries.length === 0) return [];
         const today = new Date().toDateString();
-        return fuelEntries.filter(
-            (e) => e.projectId === selectedProject && e.date.toDateString() === today
-        );
-    }, [fuelEntries, selectedProject]);
+        return fuelEntries.filter((e) => {
+            const entryDate = new Date(e.date).toDateString();
+            return entryDate === today && (user?.role === 'ADMIN' || e.projectId === user?.projectId);
+        });
+    }, [fuelEntries, user]);
 
     const todayTotalDistance = useMemo(
         () => todayEntries.reduce((sum, e) => sum + e.distance, 0),
@@ -68,7 +81,7 @@ const TodayEntries: React.FC<TodayEntriesProps> = ({ selectedProject, fuelEntrie
             <div className="page-header">
                 <div>
                     <h2 className="page-title">Today's Entries</h2>
-                    <p className="page-subtitle">Fuel entries recorded today for {selectedProject}</p>
+                    <p className="page-subtitle">Fuel entries recorded today</p>
                 </div>
                 <Chip
                     label={`${todayEntries.length} ${todayEntries.length === 1 ? "Entry" : "Entries"}`}

@@ -24,9 +24,12 @@ public class VehicleService {
 
     public VehicleDTO createVehicle(VehicleDTO dto, User currentUser) {
         Vehicle vehicle = new Vehicle();
-        vehicle.setPlateNumber(dto.getPlateNumber());
-        vehicle.setModel(dto.getModel());
+        vehicle.setVehicleName(dto.getVehicleName());
+        vehicle.setVehicleNo(dto.getVehicleNo());
         vehicle.setDriverName(dto.getDriverName());
+        vehicle.setVehicleType(dto.getVehicleType());
+        vehicle.setFuelType(dto.getFuelType());
+        vehicle.setMileage(dto.getMileage());
 
         // Assign Project
         if (currentUser.getRole() == UserRole.ADMIN) {
@@ -74,9 +77,12 @@ public class VehicleService {
             }
         }
         
-        vehicle.setPlateNumber(dto.getPlateNumber());
-        vehicle.setModel(dto.getModel());
+        vehicle.setVehicleName(dto.getVehicleName());
+        vehicle.setVehicleNo(dto.getVehicleNo());
         vehicle.setDriverName(dto.getDriverName());
+        vehicle.setVehicleType(dto.getVehicleType());
+        vehicle.setFuelType(dto.getFuelType());
+        vehicle.setMileage(dto.getMileage());
         
         // Only admin can change project
         if (currentUser.getRole() == UserRole.ADMIN && dto.getProjectId() != null) {
@@ -102,13 +108,16 @@ public class VehicleService {
         
         vehicleRepository.delete(vehicle);
     }
-
+        
     private VehicleDTO mapToDTO(Vehicle vehicle) {
         VehicleDTO dto = new VehicleDTO();
         dto.setId(vehicle.getId());
-        dto.setPlateNumber(vehicle.getPlateNumber());
-        dto.setModel(vehicle.getModel());
+        dto.setVehicleName(vehicle.getVehicleName());
+        dto.setVehicleNo(vehicle.getVehicleNo());
         dto.setDriverName(vehicle.getDriverName());
+        dto.setVehicleType(vehicle.getVehicleType());
+        dto.setFuelType(vehicle.getFuelType());
+        dto.setMileage(vehicle.getMileage());
         if (vehicle.getProject() != null) {
             dto.setProjectId(vehicle.getProject().getId());
             dto.setProjectName(vehicle.getProject().getName());

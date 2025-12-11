@@ -7,24 +7,27 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import type { Project } from '../types';
+import type { Project } from '../types/';
 
 const Projects = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { list: projects, status } = useSelector((state: RootState) => state.projects);
+    const authStatus = useSelector((state: RootState) => state.auth.status);
+    const authToken = useSelector((state: RootState) => state.auth.token);
     const [displayDialog, setDisplayDialog] = useState(false);
     const [newProject, setNewProject] = useState<Partial<Project>>({ name: '', location: '' });
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     useEffect(() => {
-        if (status === 'idle') {
+        // Only fetch data when authentication is complete
+        if (authStatus === 'succeeded' && authToken && status === 'idle') {
             dispatch(fetchProjects());
         }
 
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [dispatch, status]);
+    }, [dispatch, status, authStatus, authToken]);
 
     const handleSave = () => {
         dispatch(createProject(newProject));

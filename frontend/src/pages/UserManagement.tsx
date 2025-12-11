@@ -7,7 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { api } from '../services/api';
-import type { User, Project } from '../types';
+import type { User, Project } from '../types/';
 import toast from 'react-hot-toast';
 
 const UserManagement = () => {

@@ -9,17 +9,22 @@ import { Card } from 'primereact/card';
 const Dashboard = () => {
     const dispatch = useDispatch<AppDispatch>();
     const user = useSelector((state: RootState) => state.auth.user);
+    const authStatus = useSelector((state: RootState) => state.auth.status);
+    const authToken = useSelector((state: RootState) => state.auth.token);
     const { list: vehicles } = useSelector((state: RootState) => state.vehicles);
     const { list: fuelEntries } = useSelector((state: RootState) => state.fuel);
     const { list: projects } = useSelector((state: RootState) => state.projects);
 
     useEffect(() => {
-        dispatch(fetchVehicles());
-        dispatch(fetchFuelEntries());
-        if (user?.role === 'ADMIN') {
-            dispatch(fetchProjects());
+        // Only fetch data when authentication is complete
+        if (authStatus === 'succeeded' && authToken) {
+            dispatch(fetchVehicles());
+            dispatch(fetchFuelEntries());
+            if (user?.role === 'ADMIN') {
+                dispatch(fetchProjects());
+            }
         }
-    }, [dispatch, user]);
+    }, [dispatch, user, authStatus, authToken]);
 
     const todayEntries = useMemo(() => {
         const today = new Date().toDateString();
@@ -119,6 +124,118 @@ const Dashboard = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Fuel Audit Statistics */}
+            {user?.role === 'ADMIN' && fuelEntries.length > 0 && (
+                <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '16px', color: 'var(--text-primary)' }}>
+                        Fuel Audit Overview
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                        {/* Suspicious Entries Card */}
+                        <div style={{
+                            background: 'var(--surface)',
+                            borderRadius: '16px',
+                            padding: '24px',
+                            border: '1px solid var(--border-color)',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '12px',
+                                    background: '#fef2f2',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <i className="pi pi-exclamation-triangle" style={{ fontSize: '24px', color: '#dc2626' }}></i>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                                        Suspicious Entries
+                                    </div>
+                                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#dc2626' }}>
+                                        {fuelEntries.filter(e => e.isSuspicious).length}
+                                    </div>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                Entries with fuel usage significantly higher than expected based on vehicle mileage
+                            </p>
+                        </div>
+
+                        {/* Total Savings Card */}
+                        <div style={{
+                            background: 'var(--surface)',
+                            borderRadius: '16px',
+                            padding: '24px',
+                            border: '1px solid var(--border-color)',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '12px',
+                                    background: '#f0fdf4',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <i className="pi pi-dollar" style={{ fontSize: '24px', color: '#16a34a' }}></i>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                                        Potential Savings
+                                    </div>
+                                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#16a34a' }}>
+                                        ₹{fuelEntries.reduce((sum, e) => sum + ((e.driverBillAmount || 0) - (e.recommendedPayAmount || 0)), 0).toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                Amount saved by paying based on expected fuel consumption vs driver bills
+                            </p>
+                        </div>
+
+                        {/* Average Efficiency Card */}
+                        <div style={{
+                            background: 'var(--surface)',
+                            borderRadius: '16px',
+                            padding: '24px',
+                            border: '1px solid var(--border-color)',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '12px',
+                                    background: '#f0f9ff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <i className="pi pi-chart-bar" style={{ fontSize: '24px', color: '#3b82f6' }}></i>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                                        Avg Efficiency
+                                    </div>
+                                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#3b82f6' }}>
+                                        {(fuelEntries.reduce((sum, e) => sum + (e.effectiveMileage || 0), 0) / fuelEntries.length).toFixed(1)}
+                                    </div>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                Average fuel efficiency across all vehicles (km/L or km/unit)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* User Info Card */}
             <div style={{

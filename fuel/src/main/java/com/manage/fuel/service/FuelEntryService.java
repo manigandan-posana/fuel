@@ -35,13 +35,54 @@ public class FuelEntryService {
 
         FuelEntry entry = new FuelEntry();
         entry.setDate(dto.getDate());
-        entry.setAmount(dto.getAmount());
-        entry.setCost(dto.getCost());
-        entry.setOdometerReading(dto.getOdometerReading());
+        entry.setLitres(dto.getLitres());
+        entry.setOpeningKm(dto.getOpeningKm());
+        entry.setClosingKm(dto.getClosingKm());
+        entry.setFuelPrice(dto.getFuelPrice());
         entry.setVehicle(vehicle);
         entry.setCreatedBy(manager);
 
+        // Calculate audit statistics
+        calculateAuditStats(entry, vehicle);
+
         return mapToDTO(fuelEntryRepository.save(entry));
+    }
+
+    private void calculateAuditStats(FuelEntry entry, Vehicle vehicle) {
+        // Calculate distance
+        double distance = entry.getClosingKm() - entry.getOpeningKm();
+        entry.setDistance(distance);
+
+        // Calculate expected litres based on vehicle mileage
+        double expectedLitres = 0;
+        if (vehicle.getMileage() != null && vehicle.getMileage() > 0) {
+            expectedLitres = distance / vehicle.getMileage();
+        }
+        entry.setExpectedLitres(expectedLitres);
+
+        // Calculate effective mileage
+        double effectiveMileage = 0;
+        if (entry.getLitres() > 0) {
+            effectiveMileage = distance / entry.getLitres();
+        }
+        entry.setEffectiveMileage(effectiveMileage);
+
+        // Calculate driver bill amount
+        double driverBillAmount = entry.getLitres() * entry.getFuelPrice();
+        entry.setDriverBillAmount(driverBillAmount);
+
+        // Calculate recommended pay amount
+        double recommendedPayAmount = expectedLitres * entry.getFuelPrice();
+        entry.setRecommendedPayAmount(recommendedPayAmount);
+
+        // Check if usage is suspicious (effective mileage < 70% of rated mileage)
+        boolean isSuspicious = false;
+        if (vehicle.getMileage() != null && vehicle.getMileage() > 0) {
+            if (effectiveMileage > 0 && effectiveMileage < vehicle.getMileage() * 0.7) {
+                isSuspicious = true;
+            }
+        }
+        entry.setIsSuspicious(isSuspicious);
     }
 
     public List<FuelEntryDTO> getEntries(User user) {
@@ -67,16 +108,21 @@ public class FuelEntryService {
         }
         
         entry.setDate(dto.getDate());
-        entry.setAmount(dto.getAmount());
-        entry.setCost(dto.getCost());
-        entry.setOdometerReading(dto.getOdometerReading());
+        entry.setLitres(dto.getLitres());
+        entry.setOpeningKm(dto.getOpeningKm());
+        entry.setClosingKm(dto.getClosingKm());
+        entry.setFuelPrice(dto.getFuelPrice());
         
         // Allow changing vehicle if admin
+        Vehicle vehicle = entry.getVehicle();
         if (user.getRole() == UserRole.ADMIN && dto.getVehicleId() != null) {
-            Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
+            vehicle = vehicleRepository.findById(dto.getVehicleId())
                     .orElseThrow(() -> new RuntimeException("Vehicle not found"));
             entry.setVehicle(vehicle);
         }
+        
+        // Recalculate audit statistics
+        calculateAuditStats(entry, vehicle);
         
         return mapToDTO(fuelEntryRepository.save(entry));
     }
@@ -100,13 +146,32 @@ public class FuelEntryService {
         FuelEntryDTO dto = new FuelEntryDTO();
         dto.setId(entry.getId());
         dto.setDate(entry.getDate());
-        dto.setAmount(entry.getAmount());
-        dto.setCost(entry.getCost());
-        dto.setOdometerReading(entry.getOdometerReading());
+        
+        // New audit fields
+        dto.setLitres(entry.getLitres());
+        dto.setOpeningKm(entry.getOpeningKm());
+        dto.setClosingKm(entry.getClosingKm());
+        dto.setFuelPrice(entry.getFuelPrice());
+        dto.setDistance(entry.getDistance());
+        dto.setExpectedLitres(entry.getExpectedLitres());
+        dto.setEffectiveMileage(entry.getEffectiveMileage());
+        dto.setDriverBillAmount(entry.getDriverBillAmount());
+        dto.setRecommendedPayAmount(entry.getRecommendedPayAmount());
+        dto.setIsSuspicious(entry.getIsSuspicious());
+        
+        // Vehicle info
         dto.setVehicleId(entry.getVehicle().getId());
+        dto.setVehicleName(entry.getVehicle().getVehicleName());
+        dto.setVehicleNo(entry.getVehicle().getVehicleNo());
         dto.setVehiclePlateNumber(entry.getVehicle().getPlateNumber());
-        dto.setDriverId(entry.getCreatedBy().getId()); // Manager ID
-        dto.setDriverName(entry.getCreatedBy().getName()); // Manager Name
+        dto.setDriverName(entry.getVehicle().getDriverName());
+        dto.setVehicleType(entry.getVehicle().getVehicleType());
+        dto.setFuelType(entry.getVehicle().getFuelType());
+        dto.setVehicleMileage(entry.getVehicle().getMileage());
+        
+        // Created by info
+        dto.setDriverId(entry.getCreatedBy().getId());
+        
         return dto;
     }
 }

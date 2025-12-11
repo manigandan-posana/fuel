@@ -12,7 +12,7 @@ import { InputNumber } from "primereact/inputnumber";
 import { Divider } from "primereact/divider";
 import { Message } from "primereact/message";
 import toast from "react-hot-toast";
-import type { Vehicle, FuelEntry, ProjectId, FuelType } from "../types";
+import type { Vehicle, FuelEntry, ProjectId, FuelType } from "../types/";
 
 interface FuelManagementProps {
     selectedProject: ProjectId;
