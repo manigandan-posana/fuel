@@ -141,7 +141,8 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
 
     const dateTemplate = (rowData: FuelEntry) => rowData.date.toLocaleDateString();
 
-    const numberTemplate = (value: number, decimals = 2) => value.toFixed(decimals);
+    const numberTemplate = (value: number | undefined, decimals = 2) => 
+        value != null ? value.toFixed(decimals) : '0.00';
 
     const fuelTypeTemplate = (rowData: FuelEntry) => {
         const severity =
@@ -331,11 +332,11 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                     sortable
                 />
                 <Column
-                    field="mileage"
+                    field="effectiveMileage"
                     header="Mileage"
                     body={(rowData: FuelEntry) => (
                         <Tag
-                            value={`${numberTemplate(rowData.mileage, 2)} km/l`}
+                            value={`${numberTemplate(rowData.effectiveMileage, 2)} km/l`}
                             severity="success"
                             icon="pi pi-chart-line"
                             style={{ fontSize: "11px" }}

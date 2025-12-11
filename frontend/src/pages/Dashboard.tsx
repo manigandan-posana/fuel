@@ -225,7 +225,9 @@ const Dashboard = () => {
                                         Avg Efficiency
                                     </div>
                                     <div style={{ fontSize: '28px', fontWeight: '700', color: '#3b82f6' }}>
-                                        {(fuelEntries.reduce((sum, e) => sum + (e.effectiveMileage || 0), 0) / fuelEntries.length).toFixed(1)}
+                                        {fuelEntries.length > 0 
+                                            ? (fuelEntries.reduce((sum, e) => sum + (e.effectiveMileage || 0), 0) / fuelEntries.length).toFixed(1)
+                                            : '0.0'}
                                     </div>
                                 </div>
                             </div>

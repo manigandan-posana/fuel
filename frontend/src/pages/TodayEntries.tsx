@@ -32,12 +32,12 @@ const TodayEntries: React.FC = () => {
     }, [fuelEntries, user]);
 
     const todayTotalDistance = useMemo(
-        () => todayEntries.reduce((sum, e) => sum + e.distance, 0),
+        () => todayEntries.reduce((sum, e) => sum + (e.distance || 0), 0),
         [todayEntries]
     );
 
     const todayTotalLitres = useMemo(
-        () => todayEntries.reduce((sum, e) => sum + e.litres, 0),
+        () => todayEntries.reduce((sum, e) => sum + (e.litres || 0), 0),
         [todayEntries]
     );
 
@@ -54,7 +54,8 @@ const TodayEntries: React.FC = () => {
         );
     };
 
-    const numberTemplate = (value: number, decimals = 2) => value.toFixed(decimals);
+    const numberTemplate = (value: number | undefined, decimals = 2) => 
+        value != null ? value.toFixed(decimals) : '0.00';
 
     const photosTemplate = (rowData: FuelEntry) => {
         const hasOpening = !!rowData.openingKmPhoto;
@@ -171,11 +172,11 @@ const TodayEntries: React.FC = () => {
                     sortable
                 />
                 <Column
-                    field="mileage"
+                    field="effectiveMileage"
                     header="Mileage"
                     body={(rowData: FuelEntry) => (
                         <Tag
-                            value={`${numberTemplate(rowData.mileage, 2)} km/l`}
+                            value={`${numberTemplate(rowData.effectiveMileage, 2)} km/l`}
                             severity="success"
                             icon="pi pi-chart-line"
                             style={{ fontSize: "11px" }}
