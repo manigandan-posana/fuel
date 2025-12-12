@@ -7,9 +7,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeMenu, onMenuChange }) => {
     const menuItems = [
-        { id: "dashboard", label: "Dashboard", icon: "pi-th-large" },
-        { id: "vehicles", label: "Vehicle Management", icon: "pi-car" },
         { id: "fuel", label: "Fuel Management", icon: "pi-chart-line" },
+        { id: "vehicles", label: "Vehicle Management", icon: "pi-car" },
         { id: "today", label: "Today's Entries", icon: "pi-calendar" },
     ];
 

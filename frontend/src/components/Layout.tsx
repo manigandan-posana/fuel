@@ -18,9 +18,8 @@ const Layout = ({ children }: LayoutProps) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const menuItems = [
-        { path: '/', icon: 'pi-home', label: 'Dashboard' },
+        { path: '/', icon: 'pi-chart-line', label: 'Fuel Entries' },
         { path: '/vehicles', icon: 'pi-car', label: 'Vehicles' },
-        { path: '/fuel', icon: 'pi-chart-line', label: 'Fuel Entries' },
         { path: '/today', icon: 'pi-calendar', label: "Today's Entries" },
         ...(user?.role === 'ADMIN' ? [
             { path: '/projects', icon: 'pi-building', label: 'Projects' },

@@ -6,7 +6,6 @@ import { loginRequest } from './authConfig';
 import { syncUser, logout } from './store/slices/authSlice';
 import type { AppDispatch, RootState } from './store/store';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';
 import Fuel from './pages/Fuel';
 import Projects from './pages/Projects';
@@ -135,7 +134,7 @@ function App() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Fuel />} />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/fuel" element={<Fuel />} />
         <Route path="/today" element={<TodayEntries />} />

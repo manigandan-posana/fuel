@@ -420,27 +420,31 @@ body {
     font-size: 18px;
 }
 
-/* Override PrimeReact styles for consistency */
+/* ===== COMPACT PRIMEREACT OVERRIDES ===== */
+/* Reduce all component sizes for compact UI */
+
+/* DataTable - Compact */
 .p-datatable {
-    border-radius: 12px;
+    border-radius: 6px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
+    font-size: 12px;
 }
 
 .p-datatable .p-datatable-header {
     background: var(--surface);
     border-bottom: 1px solid var(--border-color);
-    padding: 16px;
+    padding: 8px 12px;
 }
 
 .p-datatable .p-datatable-thead > tr > th {
     background: #f8fafc;
     color: var(--text-secondary);
     font-weight: 600;
-    font-size: 13px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 12px 16px;
+    letter-spacing: 0.3px;
+    padding: 8px 10px;
 }
 
 .p-datatable .p-datatable-tbody > tr {
@@ -452,25 +456,149 @@ body {
 }
 
 .p-datatable .p-datatable-tbody > tr > td {
-    padding: 14px 16px;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
 }
 
+.p-paginator {
+    padding: 6px 8px;
+    font-size: 11px;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page {
+    min-width: 28px;
+    height: 28px;
+    font-size: 11px;
+}
+
+/* Buttons - Compact */
 .p-button {
-    border-radius: 8px;
+    border-radius: 4px;
     font-weight: 500;
+    padding: 6px 12px;
+    font-size: 12px;
 }
 
+.p-button.p-button-sm {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.p-button.p-button-lg {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.p-button .p-button-icon {
+    font-size: 12px;
+}
+
+.p-button-icon-only {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+}
+
+.p-button-icon-only .p-button-icon {
+    font-size: 13px;
+}
+
+/* Dialog - Compact */
 .p-dialog {
-    border-radius: 16px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
 }
 
 .p-dialog .p-dialog-header {
-    border-radius: 16px 16px 0 0;
-    padding: 20px 24px;
+    border-radius: 8px 8px 0 0;
+    padding: 12px 16px;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .p-dialog .p-dialog-content {
-    padding: 24px;
+    padding: 16px;
+}
+
+.p-dialog .p-dialog-footer {
+    padding: 12px 16px;
+}
+
+/* Input Fields - Compact */
+.p-inputtext {
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.p-inputnumber-input {
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.p-calendar .p-inputtext {
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.p-dropdown {
+    font-size: 12px;
+}
+
+.p-dropdown .p-dropdown-label {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.p-dropdown .p-dropdown-trigger {
+    width: 28px;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Tags & Chips - Compact */
+.p-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+}
+
+.p-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+}
+
+.p-chip .p-chip-text {
+    font-size: 11px;
+}
+
+/* Progress Spinner */
+.p-progress-spinner {
+    width: 40px;
+    height: 40px;
+}
+
+/* Tooltip */
+.p-tooltip .p-tooltip-text {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+/* ConfirmDialog */
+.p-confirmdialog {
+    font-size: 12px;
+}
+
+.p-confirmdialog .p-dialog-content {
+    padding: 16px;
+}
+
+.p-confirmdialog .p-confirmdialog-message {
+    font-size: 12px;
 }

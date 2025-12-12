@@ -7,9 +7,8 @@ interface BottomTabsProps {
 
 const BottomTabs: React.FC<BottomTabsProps> = ({ activeMenu, onMenuChange }) => {
     const menuItems = [
-        { id: "dashboard", label: "Dashboard", icon: "pi-th-large" },
-        { id: "vehicles", label: "Vehicles", icon: "pi-car" },
         { id: "fuel", label: "Fuel", icon: "pi-chart-line" },
+        { id: "vehicles", label: "Vehicles", icon: "pi-car" },
         { id: "today", label: "Today", icon: "pi-calendar" },
     ];
 
