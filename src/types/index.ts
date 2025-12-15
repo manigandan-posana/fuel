@@ -55,3 +55,17 @@ export interface FuelEntry {
   pricePerLitre?: number;
   totalCost?: number;
 }
+
+export interface DailyLogEntry {
+  id: string;
+  date: Date;
+  projectId: ProjectId;
+  vehicleId: string;
+  vehicleName: string;
+  openingKm: number;
+  closingKm?: number;
+  distance?: number;
+  status: "open" | "closed";
+  openingKmPhoto?: string;
+  closingKmPhoto?: string;
+}

@@ -1,5 +1,5 @@
 // Initial data for the application
-import type { ProjectId, VehicleType, FuelType, Vehicle, FuelEntry, Supplier } from "../types";
+import type { ProjectId, VehicleType, FuelType, Vehicle, FuelEntry, Supplier, DailyLogEntry } from "../types";
 
 export const PROJECTS: ProjectId[] = ["Project A", "Project B"];
 
@@ -261,3 +261,47 @@ export const INITIAL_FUEL_ENTRIES: FuelEntry[] = [
     },
 ];
 
+export const INITIAL_DAILY_LOGS: DailyLogEntry[] = [
+    {
+        id: "dl1",
+        date: new Date(),
+        projectId: "Project A",
+        vehicleId: "v1",
+        vehicleName: "Tipper Lorry 1",
+        openingKm: 1350.5,
+        closingKm: 1425.0,
+        distance: 74.5,
+        status: "closed",
+    },
+    {
+        id: "dl2",
+        date: new Date(),
+        projectId: "Project A",
+        vehicleId: "v2",
+        vehicleName: "Site Car",
+        openingKm: 5920.0,
+        status: "open",
+    },
+    {
+        id: "dl3",
+        date: new Date(Date.now() - 86400000),
+        projectId: "Project A",
+        vehicleId: "v1",
+        vehicleName: "Tipper Lorry 1",
+        openingKm: 1200.0,
+        closingKm: 1350.5,
+        distance: 150.5,
+        status: "closed",
+    },
+    {
+        id: "dl4",
+        date: new Date(Date.now() - 86400000),
+        projectId: "Project B",
+        vehicleId: "v3",
+        vehicleName: "Pickup Van",
+        openingKm: 8500.0,
+        closingKm: 8680.0,
+        distance: 180.0,
+        status: "closed",
+    },
+];

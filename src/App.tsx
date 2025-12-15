@@ -7,16 +7,17 @@ import Dashboard from "./pages/Dashboard";
 import VehicleManagement from "./pages/VehicleManagement";
 import VehicleDetails from "./pages/VehicleDetails";
 import FuelManagement from "./pages/FuelManagement";
-import TodayEntries from "./pages/TodayEntries";
+import DailyLog from "./pages/DailyLog";
+import History from "./pages/History";
 import SupplierManagement from "./pages/SupplierManagement";
-import type { Vehicle, FuelEntry, Supplier, ProjectId } from "./types";
+import type { Vehicle, FuelEntry, Supplier, ProjectId, DailyLogEntry } from "./types";
 
 import "primereact/resources/themes/lara-light-green/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import "./App.css";
-import { INITIAL_VEHICLES, INITIAL_FUEL_ENTRIES, INITIAL_SUPPLIERS } from "./data/constants";
+import { INITIAL_VEHICLES, INITIAL_FUEL_ENTRIES, INITIAL_SUPPLIERS, INITIAL_DAILY_LOGS } from "./data/constants";
 
 const App: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<ProjectId>("Project A");
@@ -46,6 +47,11 @@ const App: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
     const saved = localStorage.getItem("suppliers");
     return saved ? JSON.parse(saved) : INITIAL_SUPPLIERS;
+  });
+
+  const [dailyLogs, setDailyLogs] = useState<DailyLogEntry[]>(() => {
+    const saved = localStorage.getItem("dailyLogs");
+    return saved ? JSON.parse(saved).map((e: any) => ({ ...e, date: new Date(e.date) })) : INITIAL_DAILY_LOGS;
   });
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -92,6 +98,30 @@ const App: React.FC = () => {
     setSuppliers((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const handleAddDailyLog = (log: Omit<DailyLogEntry, "id">) => {
+    const newLog: DailyLogEntry = {
+      id: `dl${Date.now()}`,
+      ...log,
+    };
+    setDailyLogs((prev) => [newLog, ...prev]);
+  };
+
+  const handleCloseDailyLog = (id: string, closingKm: number, closingKmPhoto?: string) => {
+    setDailyLogs((prev) =>
+      prev.map((log) =>
+        log.id === id
+          ? {
+            ...log,
+            closingKm,
+            distance: closingKm - log.openingKm,
+            status: "closed" as const,
+            closingKmPhoto,
+          }
+          : log
+      )
+    );
+  };
+
   const handleProjectChange = (project: ProjectId) => {
     setSelectedProject(project);
   };
@@ -108,6 +138,10 @@ const App: React.FC = () => {
   React.useEffect(() => {
     localStorage.setItem("suppliers", JSON.stringify(suppliers));
   }, [suppliers]);
+
+  React.useEffect(() => {
+    localStorage.setItem("dailyLogs", JSON.stringify(dailyLogs));
+  }, [dailyLogs]);
 
   const renderPage = () => {
     switch (activeMenu) {
@@ -161,7 +195,24 @@ const App: React.FC = () => {
           />
         );
       case "today":
-        return <TodayEntries selectedProject={selectedProject} fuelEntries={fuelEntries} />;
+        return (
+          <DailyLog
+            selectedProject={selectedProject}
+            vehicles={vehicles}
+            dailyLogs={dailyLogs}
+            onAddDailyLog={handleAddDailyLog}
+            onCloseDailyLog={handleCloseDailyLog}
+          />
+        );
+      case "history":
+        return (
+          <History
+            selectedProject={selectedProject}
+            vehicles={vehicles}
+            fuelEntries={fuelEntries}
+            dailyLogs={dailyLogs}
+          />
+        );
       default:
         return (
           <Dashboard
@@ -180,6 +231,7 @@ const App: React.FC = () => {
       case "fuel": return "Fuel Management";
       case "suppliers": return "Fuel Suppliers";
       case "today": return "Daily Log Sheet";
+      case "history": return "History";
       default: return "Dashboard";
     }
   };
