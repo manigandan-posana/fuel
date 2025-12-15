@@ -70,6 +70,16 @@ const DailyLog: React.FC<DailyLogProps> = ({
             return;
         }
 
+        // Check if vehicle already has an open log
+        const existingOpenLog = dailyLogs.find(
+            (log) => log.vehicleId === createVehicleId && log.status === "open"
+        );
+
+        if (existingOpenLog) {
+            toast.error("This vehicle already has an open daily log. Please close it first.");
+            return;
+        }
+
         const vehicle = vehicles.find((v) => v.id === createVehicleId);
         if (!vehicle) {
             toast.error("Vehicle not found");

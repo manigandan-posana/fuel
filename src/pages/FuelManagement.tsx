@@ -40,11 +40,13 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
     onDeleteFuelEntry,
 }) => {
     const [activeFuelType, setActiveFuelType] = useState<FuelType>("Petrol");
+    const [viewMode, setViewMode] = useState<"current" | "history">("current");
+
+    // Filter states (only for history view)
     const [selectedVehicleFilter, setSelectedVehicleFilter] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [dateFrom, setDateFrom] = useState<Date | null>(null);
     const [dateTo, setDateTo] = useState<Date | null>(null);
-    const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
 
     const [newEntry, setNewEntry] = useState<NewEntryRow>({
@@ -81,36 +83,40 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             (e) => e.projectId === selectedProject && e.fuelType === activeFuelType
         );
 
-        if (selectedVehicleFilter) {
-            filtered = filtered.filter((e) => e.vehicleId === selectedVehicleFilter);
-        }
+        // Filter by view mode (current = open, history = closed)
+        if (viewMode === "current") {
+            filtered = filtered.filter((e) => e.status === "open");
+        } else {
+            filtered = filtered.filter((e) => e.status === "closed");
 
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(
-                (e) =>
-                    e.vehicleName.toLowerCase().includes(query) ||
-                    e.supplierName.toLowerCase().includes(query)
-            );
-        }
+            // Apply filters only in history view
+            if (selectedVehicleFilter) {
+                filtered = filtered.filter((e) => e.vehicleId === selectedVehicleFilter);
+            }
 
-        if (dateFrom) {
-            const fromDate = new Date(dateFrom);
-            fromDate.setHours(0, 0, 0, 0);
-            filtered = filtered.filter((e) => e.date >= fromDate);
-        }
-        if (dateTo) {
-            const toDate = new Date(dateTo);
-            toDate.setHours(23, 59, 59, 999);
-            filtered = filtered.filter((e) => e.date <= toDate);
-        }
+            if (searchQuery.trim()) {
+                const query = searchQuery.toLowerCase();
+                filtered = filtered.filter(
+                    (e) =>
+                        e.vehicleName.toLowerCase().includes(query) ||
+                        e.supplierName.toLowerCase().includes(query)
+                );
+            }
 
-        if (statusFilter) {
-            filtered = filtered.filter((e) => e.status === statusFilter);
-        }
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                fromDate.setHours(0, 0, 0, 0);
+                filtered = filtered.filter((e) => e.date >= fromDate);
+            }
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                filtered = filtered.filter((e) => e.date <= toDate);
+            }
 
-        if (supplierFilter) {
-            filtered = filtered.filter((e) => e.supplierId === supplierFilter);
+            if (supplierFilter) {
+                filtered = filtered.filter((e) => e.supplierId === supplierFilter);
+            }
         }
 
         return filtered.slice().sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -118,11 +124,11 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         fuelEntries,
         selectedProject,
         activeFuelType,
+        viewMode,
         selectedVehicleFilter,
         searchQuery,
         dateFrom,
         dateTo,
-        statusFilter,
         supplierFilter,
     ]);
 
@@ -282,14 +288,6 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         return <i className="pi pi-check-circle text-green-500" style={{ fontSize: "1.1rem" }} />;
     };
 
-    const anyFilterActive =
-        !!searchQuery ||
-        !!selectedVehicleFilter ||
-        !!supplierFilter ||
-        !!statusFilter ||
-        !!dateFrom ||
-        !!dateTo;
-
     const projectSuppliers = suppliers.filter((s) => s.projectId === selectedProject);
 
     return (
@@ -306,8 +304,9 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
 
                     <div className="fm-seg">
                         <button
-                            className={`fm-seg-btn ${activeFuelType === "Petrol" ? "active" : ""}`}
+                            className={`fm-seg-btn ${viewMode === "current" && activeFuelType === "Petrol" ? "active" : ""}`}
                             onClick={() => {
+                                setViewMode("current");
                                 setActiveFuelType("Petrol");
                                 setSelectedVehicleFilter(null);
                             }}
@@ -317,8 +316,9 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                             Petrol
                         </button>
                         <button
-                            className={`fm-seg-btn ${activeFuelType === "Diesel" ? "active" : ""}`}
+                            className={`fm-seg-btn ${viewMode === "current" && activeFuelType === "Diesel" ? "active" : ""}`}
                             onClick={() => {
+                                setViewMode("current");
                                 setActiveFuelType("Diesel");
                                 setSelectedVehicleFilter(null);
                             }}
@@ -328,8 +328,9 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                             Diesel
                         </button>
                         <button
-                            className={`fm-seg-btn ${activeFuelType === "Electric" ? "active" : ""}`}
+                            className={`fm-seg-btn ${viewMode === "current" && activeFuelType === "Electric" ? "active" : ""}`}
                             onClick={() => {
+                                setViewMode("current");
                                 setActiveFuelType("Electric");
                                 setSelectedVehicleFilter(null);
                             }}
@@ -337,6 +338,17 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                         >
                             <i className="pi pi-flash" />
                             Electric
+                        </button>
+                        <button
+                            className={`fm-seg-btn ${viewMode === "history" ? "active" : ""}`}
+                            onClick={() => {
+                                setViewMode("history");
+                                setSelectedVehicleFilter(null);
+                            }}
+                            type="button"
+                        >
+                            <i className="pi pi-history" />
+                            History
                         </button>
                     </div>
                 </div>
@@ -347,10 +359,16 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                         <div className="v">{filteredFuelEntries.length}</div>
                     </div>
                     <div className="fm-chip">
-                        <div className="k">Fuel Type</div>
-                        <div className="v">{activeFuelType}</div>
+                        <div className="k">{viewMode === "current" ? "Status" : "View"}</div>
+                        <div className="v">{viewMode === "current" ? "Open" : "History"}</div>
                     </div>
-                    {selectedVehicleFilter && (
+                    {viewMode === "current" && (
+                        <div className="fm-chip">
+                            <div className="k">Fuel Type</div>
+                            <div className="v">{activeFuelType}</div>
+                        </div>
+                    )}
+                    {viewMode === "history" && selectedVehicleFilter && (
                         <div className="fm-chip good">
                             <div className="k">Cumulative (Closed)</div>
                             <div className="v">{cumulativeDistance.toFixed(2)} km</div>
@@ -359,121 +377,105 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 </div>
             </div>
 
-            <Card className="fm-card fm-filters-card">
-                <div className="fm-filters-row">
-                    {/* Search */}
-                    <FloatLabel className="fm-fi fm-fi-search">
-                        <InputText
-                            id="filter-search"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="p-inputtext-sm fm-input"
-                        />
-                        <i className="pi pi-search fm-search-ico" />
-                        <label htmlFor="filter-search">Search vehicle / supplier</label>
-                    </FloatLabel>
+            {/* Filters (only show in history view) */}
+            {viewMode === "history" && (
+                <Card className="fm-card fm-filters-card">
+                    <div className="fm-filters-row">
+                        {/* Search */}
+                        <FloatLabel className="fm-fi fm-fi-search">
+                            <InputText
+                                id="filter-search"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="p-inputtext-sm fm-input"
+                            />
+                            <i className="pi pi-search fm-search-ico" />
+                            <label htmlFor="filter-search">Search vehicle / supplier</label>
+                        </FloatLabel>
 
-                    {/* Vehicle Filter - PrimeReact Dropdown */}
-                    <FloatLabel className="fm-fi">
-                        <Dropdown
-                            inputId="filter-vehicle"
-                            value={selectedVehicleFilter}
-                            onChange={(e) => setSelectedVehicleFilter(e.value)}
-                            options={[
-                                { label: "All Vehicles", value: null },
-                                ...fuelTypeVehicles.map((v) => ({ label: v.vehicleName, value: v.id }))
-                            ]}
-                            optionLabel="label"
-                            placeholder=" "
-                            className="p-inputtext-sm w-full"
-                        />
-                        <label htmlFor="filter-vehicle">Vehicle</label>
-                    </FloatLabel>
+                        {/* Vehicle Filter - PrimeReact Dropdown */}
+                        <FloatLabel className="fm-fi">
+                            <Dropdown
+                                inputId="filter-vehicle"
+                                value={selectedVehicleFilter}
+                                onChange={(e) => setSelectedVehicleFilter(e.value)}
+                                options={[
+                                    { label: "All Vehicles", value: null },
+                                    ...projectVehicles.map((v) => ({ label: v.vehicleName, value: v.id }))
+                                ]}
+                                optionLabel="label"
+                                placeholder=" "
+                                className="p-inputtext-sm w-full"
+                            />
+                            <label htmlFor="filter-vehicle">Vehicle</label>
+                        </FloatLabel>
 
-                    {/* Supplier Filter - PrimeReact Dropdown */}
-                    <FloatLabel className="fm-fi">
-                        <Dropdown
-                            inputId="filter-supplier"
-                            value={supplierFilter}
-                            onChange={(e) => setSupplierFilter(e.value)}
-                            options={[
-                                { label: "All Suppliers", value: null },
-                                ...projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))
-                            ]}
-                            optionLabel="label"
-                            placeholder=" "
-                            className="p-inputtext-sm w-full"
-                        />
-                        <label htmlFor="filter-supplier">Supplier</label>
-                    </FloatLabel>
+                        {/* Supplier Filter - PrimeReact Dropdown */}
+                        <FloatLabel className="fm-fi">
+                            <Dropdown
+                                inputId="filter-supplier"
+                                value={supplierFilter}
+                                onChange={(e) => setSupplierFilter(e.value)}
+                                options={[
+                                    { label: "All Suppliers", value: null },
+                                    ...projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))
+                                ]}
+                                optionLabel="label"
+                                placeholder=" "
+                                className="p-inputtext-sm w-full"
+                            />
+                            <label htmlFor="filter-supplier">Supplier</label>
+                        </FloatLabel>
 
-                    {/* Status Filter - PrimeReact Dropdown */}
-                    <FloatLabel className="fm-fi fm-fi-sm">
-                        <Dropdown
-                            inputId="filter-status"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.value)}
-                            options={[
-                                { label: "All Status", value: null },
-                                { label: "Open", value: "open" },
-                                { label: "Closed", value: "closed" }
-                            ]}
-                            optionLabel="label"
-                            placeholder=" "
-                            className="p-inputtext-sm w-full"
-                        />
-                        <label htmlFor="filter-status">Status</label>
-                    </FloatLabel>
+                        {/* Date From */}
+                        <FloatLabel className="fm-fi fm-fi-date">
+                            <Calendar
+                                inputId="filter-date-from"
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.value as Date)}
+                                dateFormat="dd/mm/yy"
+                                showIcon
+                                showButtonBar
+                                placeholder=" "
+                                className="p-inputtext-sm fm-cal"
+                            />
+                            <label htmlFor="filter-date-from">From Date</label>
+                        </FloatLabel>
 
-                    {/* Date From */}
-                    <FloatLabel className="fm-fi fm-fi-date">
-                        <Calendar
-                            inputId="filter-date-from"
-                            value={dateFrom}
-                            onChange={(e) => setDateFrom(e.value as Date)}
-                            dateFormat="dd/mm/yy"
-                            showIcon
-                            showButtonBar
-                            placeholder=" "
-                            className="p-inputtext-sm fm-cal"
-                        />
-                        <label htmlFor="filter-date-from">From Date</label>
-                    </FloatLabel>
+                        {/* Date To */}
+                        <FloatLabel className="fm-fi fm-fi-date">
+                            <Calendar
+                                inputId="filter-date-to"
+                                value={dateTo}
+                                onChange={(e) => setDateTo(e.value as Date)}
+                                dateFormat="dd/mm/yy"
+                                showIcon
+                                showButtonBar
+                                placeholder=" "
+                                className="p-inputtext-sm fm-cal"
+                            />
+                            <label htmlFor="filter-date-to">To Date</label>
+                        </FloatLabel>
 
-                    {/* Date To */}
-                    <FloatLabel className="fm-fi fm-fi-date">
-                        <Calendar
-                            inputId="filter-date-to"
-                            value={dateTo}
-                            onChange={(e) => setDateTo(e.value as Date)}
-                            dateFormat="dd/mm/yy"
-                            showIcon
-                            showButtonBar
-                            placeholder=" "
-                            className="p-inputtext-sm fm-cal"
+                        {/* Clear Button */}
+                        <Button
+                            label="Clear"
+                            icon="pi pi-filter-slash"
+                            size="small"
+                            outlined
+                            onClick={() => {
+                                setSearchQuery("");
+                                setSelectedVehicleFilter(null);
+                                setSupplierFilter(null);
+                                setDateFrom(null);
+                                setDateTo(null);
+                            }}
+                            disabled={!searchQuery && !selectedVehicleFilter && !supplierFilter && !dateFrom && !dateTo}
+                            className="fm-clear-btn"
                         />
-                        <label htmlFor="filter-date-to">To Date</label>
-                    </FloatLabel>
-
-                    {/* Clear Button */}
-                    <Button
-                        label="Clear"
-                        icon="pi pi-filter-slash"
-                        size="small"
-                        outlined
-                        onClick={() => {
-                            setSearchQuery("");
-                            setSelectedVehicleFilter(null);
-                            setSupplierFilter(null);
-                            setStatusFilter(null);
-                            setDateFrom(null);
-                            setDateTo(null);
-                        }}
-                        disabled={!anyFilterActive}
-                        className="fm-clear-btn"
-                    />
-                </div>
-            </Card>
+                    </div>
+                </Card>
+            )}
 
 
 
@@ -488,115 +490,117 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 </div>
             )}
 
-            {/* Quick Add Entry (compact) */}
-            <Card className="fm-card fm-add-card">
-                <div className="fm-add-head">
-                    <div className="fm-add-title">
-                        <i className="pi pi-plus-circle" />
-                        <span>Add New Entry</span>
+            {/* Quick Add Entry (only show in current view) */}
+            {viewMode === "current" && (
+                <Card className="fm-card fm-add-card">
+                    <div className="fm-add-head">
+                        <div className="fm-add-title">
+                            <i className="pi pi-plus-circle" />
+                            <span>Add New Entry</span>
+                        </div>
+                        <div className="fm-add-hint">Quick add (then close later)</div>
                     </div>
-                    <div className="fm-add-hint">Quick add (then close later)</div>
-                </div>
 
-                <div className="fm-add-row">
-                    <FloatLabel className="fm-fl">
-                        <Calendar
-                            id="entryDate"
-                            value={newEntry.date}
-                            onChange={(e) => setNewEntry((prev) => ({ ...prev, date: (e.value as Date) || new Date() }))}
-                            dateFormat="dd/mm/yy"
-                            showIcon
-                            iconPos="left"
-                            className="p-inputtext-sm fm-cal"
+                    <div className="fm-add-row">
+                        <FloatLabel className="fm-fl">
+                            <Calendar
+                                id="entryDate"
+                                value={newEntry.date}
+                                onChange={(e) => setNewEntry((prev) => ({ ...prev, date: (e.value as Date) || new Date() }))}
+                                dateFormat="dd/mm/yy"
+                                showIcon
+                                iconPos="left"
+                                className="p-inputtext-sm fm-cal"
+                            />
+                            <label htmlFor="entryDate">Date</label>
+                        </FloatLabel>
+
+                        <FloatLabel className="fm-fl fm-grow">
+                            <Dropdown
+                                inputId="entryVehicle"
+                                value={newEntry.vehicleId}
+                                options={fuelTypeVehicles.map((v) => ({
+                                    label: `${v.vehicleName} (${v.vehicleNumber})`,
+                                    value: v.id,
+                                }))}
+                                optionLabel="label"
+                                optionValue="value"
+                                onChange={(e) => setNewEntry((prev) => ({ ...prev, vehicleId: e.value }))}
+                                placeholder=" "
+                                className="p-inputtext-sm fm-dd w-full"
+                            />
+                            <label htmlFor="entryVehicle">Vehicle</label>
+                        </FloatLabel>
+
+                        <FloatLabel className="fm-fl fm-grow">
+                            <Dropdown
+                                inputId="entrySupplier"
+                                value={newEntry.supplierId}
+                                options={projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))}
+                                optionLabel="label"
+                                optionValue="value"
+                                onChange={(e) => setNewEntry((prev) => ({ ...prev, supplierId: e.value }))}
+                                placeholder=" "
+                                className="p-inputtext-sm fm-dd w-full"
+                            />
+                            <label htmlFor="entrySupplier">Supplier</label>
+                        </FloatLabel>
+
+                        <FloatLabel className="fm-fl fm-narrow">
+                            <InputText
+                                id="entryLitres"
+                                value={newEntry.litres}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === "" || /^\d*\.?\d*$/.test(value)) setNewEntry((prev) => ({ ...prev, litres: value }));
+                                }}
+                                className="p-inputtext-sm fm-input"
+                                keyfilter="num"
+                            />
+                            <label htmlFor="entryLitres">Litres</label>
+                        </FloatLabel>
+
+                        <FloatLabel className="fm-fl fm-narrow">
+                            <InputText
+                                id="entryPrice"
+                                value={newEntry.pricePerLitre}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === "" || /^\d*\.?\d*$/.test(value))
+                                        setNewEntry((prev) => ({ ...prev, pricePerLitre: value }));
+                                }}
+                                className="p-inputtext-sm fm-input"
+                                keyfilter="num"
+                            />
+                            <label htmlFor="entryPrice">Price / L</label>
+                        </FloatLabel>
+
+                        <FloatLabel className="fm-fl fm-narrow">
+                            <InputText
+                                id="entryOpeningKm"
+                                value={newEntry.openingKm}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === "" || /^\d*\.?\d*$/.test(value))
+                                        setNewEntry((prev) => ({ ...prev, openingKm: value }));
+                                }}
+                                className="p-inputtext-sm fm-input"
+                                keyfilter="num"
+                            />
+                            <label htmlFor="entryOpeningKm">Opening Km</label>
+                        </FloatLabel>
+
+                        <Button
+                            label="Add"
+                            icon="pi pi-plus"
+                            onClick={handleAddNewEntry}
+                            severity="success"
+                            size="small"
+                            className="fm-add-btn"
                         />
-                        <label htmlFor="entryDate">Date</label>
-                    </FloatLabel>
-
-                    <FloatLabel className="fm-fl fm-grow">
-                        <Dropdown
-                            inputId="entryVehicle"
-                            value={newEntry.vehicleId}
-                            options={fuelTypeVehicles.map((v) => ({
-                                label: `${v.vehicleName} (${v.vehicleNumber})`,
-                                value: v.id,
-                            }))}
-                            optionLabel="label"
-                            optionValue="value"
-                            onChange={(e) => setNewEntry((prev) => ({ ...prev, vehicleId: e.value }))}
-                            placeholder=" "
-                            className="p-inputtext-sm fm-dd w-full"
-                        />
-                        <label htmlFor="entryVehicle">Vehicle</label>
-                    </FloatLabel>
-
-                    <FloatLabel className="fm-fl fm-grow">
-                        <Dropdown
-                            inputId="entrySupplier"
-                            value={newEntry.supplierId}
-                            options={projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))}
-                            optionLabel="label"
-                            optionValue="value"
-                            onChange={(e) => setNewEntry((prev) => ({ ...prev, supplierId: e.value }))}
-                            placeholder=" "
-                            className="p-inputtext-sm fm-dd w-full"
-                        />
-                        <label htmlFor="entrySupplier">Supplier</label>
-                    </FloatLabel>
-
-                    <FloatLabel className="fm-fl fm-narrow">
-                        <InputText
-                            id="entryLitres"
-                            value={newEntry.litres}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                if (value === "" || /^\d*\.?\d*$/.test(value)) setNewEntry((prev) => ({ ...prev, litres: value }));
-                            }}
-                            className="p-inputtext-sm fm-input"
-                            keyfilter="num"
-                        />
-                        <label htmlFor="entryLitres">Litres</label>
-                    </FloatLabel>
-
-                    <FloatLabel className="fm-fl fm-narrow">
-                        <InputText
-                            id="entryPrice"
-                            value={newEntry.pricePerLitre}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                if (value === "" || /^\d*\.?\d*$/.test(value))
-                                    setNewEntry((prev) => ({ ...prev, pricePerLitre: value }));
-                            }}
-                            className="p-inputtext-sm fm-input"
-                            keyfilter="num"
-                        />
-                        <label htmlFor="entryPrice">Price / L</label>
-                    </FloatLabel>
-
-                    <FloatLabel className="fm-fl fm-narrow">
-                        <InputText
-                            id="entryOpeningKm"
-                            value={newEntry.openingKm}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                if (value === "" || /^\d*\.?\d*$/.test(value))
-                                    setNewEntry((prev) => ({ ...prev, openingKm: value }));
-                            }}
-                            className="p-inputtext-sm fm-input"
-                            keyfilter="num"
-                        />
-                        <label htmlFor="entryOpeningKm">Opening Km</label>
-                    </FloatLabel>
-
-                    <Button
-                        label="Add"
-                        icon="pi pi-plus"
-                        onClick={handleAddNewEntry}
-                        severity="success"
-                        size="small"
-                        className="fm-add-btn"
-                    />
-                </div>
-            </Card>
+                    </div>
+                </Card>
+            )}
 
             {/* Table */}
             <Card className="fm-card fm-table-card">
