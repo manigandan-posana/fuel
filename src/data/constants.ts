@@ -21,6 +21,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Own Vehicle",
         fuelType: "Diesel",
         status: "Active",
+        startDate: new Date(2024, 0, 1),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 0, 1), reason: "Initial vehicle registration" }]
     },
     {
         id: "v2",
@@ -30,6 +32,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Rent – Daily",
         fuelType: "Petrol",
         status: "Active",
+        startDate: new Date(2024, 1, 15),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 1, 15), reason: "Initial vehicle registration" }]
     },
     {
         id: "v3",
@@ -39,6 +43,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Rent – Monthly",
         fuelType: "Diesel",
         status: "Active",
+        startDate: new Date(2024, 2, 1),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 2, 1), reason: "Initial vehicle registration" }]
     },
     {
         id: "v4",
@@ -48,6 +54,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Rent – Hourly",
         fuelType: "Diesel",
         status: "Active",
+        startDate: new Date(2024, 3, 10),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 3, 10), reason: "Initial vehicle registration" }]
     },
     {
         id: "v5",
@@ -57,6 +65,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Own Vehicle",
         fuelType: "Petrol",
         status: "Active",
+        startDate: new Date(2024, 0, 5),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 0, 5), reason: "Initial vehicle registration" }]
     },
     {
         id: "v6",
@@ -66,6 +76,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Own Vehicle",
         fuelType: "Diesel",
         status: "Active",
+        startDate: new Date(2024, 1, 1),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 1, 1), reason: "Initial vehicle registration" }]
     },
     {
         id: "v7",
@@ -75,6 +87,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Own Vehicle",
         fuelType: "Petrol",
         status: "Active",
+        startDate: new Date(2024, 2, 15),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 2, 15), reason: "Initial vehicle registration" }]
     },
     {
         id: "v8",
@@ -84,6 +98,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Rent – Monthly",
         fuelType: "Diesel",
         status: "Active",
+        startDate: new Date(2024, 3, 1),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 3, 1), reason: "Initial vehicle registration" }]
     },
     {
         id: "v9",
@@ -93,6 +109,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Own Vehicle",
         fuelType: "Electric",
         status: "Active",
+        startDate: new Date(2024, 4, 1),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 4, 1), reason: "Initial vehicle registration" }]
     },
     {
         id: "v10",
@@ -102,6 +120,8 @@ export const INITIAL_VEHICLES: Vehicle[] = [
         vehicleType: "Rent – Daily",
         fuelType: "Diesel",
         status: "Active",
+        startDate: new Date(2024, 5, 1),
+        statusHistory: [{ status: "Active", startDate: new Date(2024, 5, 1), reason: "Initial vehicle registration" }]
     },
 ];
 

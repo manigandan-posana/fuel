@@ -6,6 +6,9 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { FloatLabel } from "primereact/floatlabel";
+import { Calendar } from "primereact/calendar";
+import { TabView, TabPanel } from "primereact/tabview";
+import { InputTextarea } from "primereact/inputtextarea";
 import toast from "react-hot-toast";
 import type { Vehicle, FuelEntry, ProjectId, VehicleType, FuelType } from "../types";
 import { VEHICLE_TYPES, FUEL_TYPES } from "../data/constants";
@@ -17,6 +20,7 @@ interface VehicleManagementProps {
     onAddVehicle: (vehicle: Omit<Vehicle, "id">) => void;
     onDeleteVehicle: (id: string) => void;
     onUpdateVehicle: (id: string, updates: Partial<Vehicle>) => void;
+    onViewVehicle: (vehicle: Vehicle) => void;
 }
 
 const VehicleManagement: React.FC<VehicleManagementProps> = ({
@@ -26,22 +30,29 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
     onAddVehicle,
     onDeleteVehicle,
     onUpdateVehicle,
+    onViewVehicle,
 }) => {
     const [showDialog, setShowDialog] = useState(false);
-    const [showFuelDialog, setShowFuelDialog] = useState(false);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [showStatusDialog, setShowStatusDialog] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+    const [statusChangeReason, setStatusChangeReason] = useState("");
+    const [statusChangeDate, setStatusChangeDate] = useState<Date>(new Date());
+
     const [vehicleForm, setVehicleForm] = useState<{
         vehicleName: string;
         vehicleNumber: string;
         vehicleType: VehicleType;
         fuelType: FuelType;
         status: "Active" | "Inactive";
+        startDate: Date | null;
     }>({
         vehicleName: "",
         vehicleNumber: "",
         vehicleType: "Own Vehicle",
         fuelType: "Petrol",
         status: "Active",
+        startDate: new Date(),
     });
 
     const projectVehicles = useMemo(
@@ -62,10 +73,20 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             return;
         }
 
+        if (!vehicleForm.startDate) {
+            toast.error("Please select a start date");
+            return;
+        }
+
         onAddVehicle({
             projectId: selectedProject,
             ...vehicleForm,
-            status: vehicleForm.status,
+            startDate: vehicleForm.startDate,
+            statusHistory: [{
+                status: vehicleForm.status,
+                startDate: vehicleForm.startDate,
+                reason: "Initial vehicle registration"
+            }]
         });
 
         setShowDialog(false);
@@ -75,30 +96,124 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             vehicleType: "Own Vehicle",
             fuelType: "Petrol",
             status: "Active",
+            startDate: new Date(),
         });
         toast.success("✅ Vehicle added successfully!");
     };
 
-    const handleRowClick = (vehicle: Vehicle) => {
+    const handleEditVehicle = () => {
+        if (!selectedVehicle) return;
+
+        if (!vehicleForm.vehicleName.trim() || !vehicleForm.vehicleNumber.trim()) {
+            toast.error("Please fill all required fields");
+            return;
+        }
+
+        onUpdateVehicle(selectedVehicle.id, {
+            vehicleName: vehicleForm.vehicleName,
+            vehicleNumber: vehicleForm.vehicleNumber,
+            vehicleType: vehicleForm.vehicleType,
+            fuelType: vehicleForm.fuelType,
+        });
+
+        setShowEditDialog(false);
+        setSelectedVehicle(null);
+        toast.success("✅ Vehicle updated successfully!");
+    };
+
+    const handleOpenEditDialog = (vehicle: Vehicle) => {
         setSelectedVehicle(vehicle);
-        setShowFuelDialog(true);
+        setVehicleForm({
+            vehicleName: vehicle.vehicleName,
+            vehicleNumber: vehicle.vehicleNumber,
+            vehicleType: vehicle.vehicleType,
+            fuelType: vehicle.fuelType,
+            status: vehicle.status,
+            startDate: vehicle.startDate || new Date(),
+        });
+        setShowEditDialog(true);
+    };
+
+    const handleOpenStatusDialog = (vehicle: Vehicle) => {
+        setSelectedVehicle(vehicle);
+        setStatusChangeDate(new Date());
+        setStatusChangeReason("");
+        setShowStatusDialog(true);
+    };
+
+    const handleStatusChange = () => {
+        if (!selectedVehicle) return;
+
+        if (!statusChangeReason.trim()) {
+            toast.error("Please provide a reason for status change");
+            return;
+        }
+
+        const newStatus = selectedVehicle.status === "Active" ? "Inactive" : "Active";
+        const currentHistory = selectedVehicle.statusHistory || [];
+
+        // Close the current period
+        const updatedHistory = currentHistory.map((h, index) => {
+            if (index === currentHistory.length - 1 && !h.endDate) {
+                return { ...h, endDate: statusChangeDate };
+            }
+            return h;
+        });
+
+        // Add new status period
+        updatedHistory.push({
+            status: newStatus,
+            startDate: statusChangeDate,
+            reason: statusChangeReason
+        });
+
+        onUpdateVehicle(selectedVehicle.id, {
+            status: newStatus,
+            startDate: newStatus === "Active" ? statusChangeDate : selectedVehicle.startDate,
+            endDate: newStatus === "Inactive" ? statusChangeDate : undefined,
+            statusHistory: updatedHistory
+        });
+
+        setShowStatusDialog(false);
+        setSelectedVehicle(null);
+        setStatusChangeReason("");
+        toast.success(`Vehicle ${newStatus === "Active" ? "activated" : "deactivated"} successfully!`);
+    };
+
+    const handleRowClick = (vehicle: Vehicle) => {
+        onViewVehicle(vehicle);
     };
 
     const vehicleActionsTemplate = (rowData: Vehicle) => (
-        <Button
-            icon="pi pi-trash"
-            rounded
-            text
-            size="small"
-            severity="danger"
-            onClick={(e) => {
-                e.stopPropagation();
-                onDeleteVehicle(rowData.id);
-                toast.success("🗑️ Vehicle deleted");
-            }}
-            tooltip="Delete"
-            tooltipOptions={{ position: "left" }}
-        />
+        <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+            <Button
+                icon="pi pi-pencil"
+                rounded
+                text
+                size="small"
+                severity="info"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenEditDialog(rowData);
+                }}
+                tooltip="Edit"
+                tooltipOptions={{ position: "left" }}
+            />
+            <Button
+                icon="pi pi-trash"
+                rounded
+                text
+                size="small"
+                severity="danger"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteVehicle(rowData.id);
+                    toast.success("🗑️ Vehicle deleted");
+                }}
+                tooltip="Delete"
+                tooltipOptions={{ position: "left" }}
+            />
+        </div>
     );
 
     const dateTemplate = (rowData: FuelEntry) => rowData.date.toLocaleDateString();
@@ -177,8 +292,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                                 outlined
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onUpdateVehicle(rowData.id, { status: isActive ? 'Inactive' : 'Active' });
-                                    toast.success(`Vehicle ${isActive ? 'deactivated' : 'activated'}`);
+                                    handleOpenStatusDialog(rowData);
                                 }}
                                 style={{ fontSize: 'var(--font-xs)', padding: 'var(--spacing-1) var(--spacing-2)' }}
                             />
@@ -232,23 +346,24 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 <Column
                     body={vehicleActionsTemplate}
                     exportable={false}
-                    style={{ width: "80px", textAlign: "center" }}
+                    style={{ width: "100px", textAlign: "center" }}
                 />
             </DataTable>
 
+            {/* Add Vehicle Dialog */}
             <Dialog
                 header="Add New Vehicle"
                 visible={showDialog}
-                style={{ width: "450px" }}
+                style={{ width: "500px" }}
                 onHide={() => setShowDialog(false)}
                 footer={
-                    <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
                         <Button label="Cancel" icon="pi pi-times" onClick={() => setShowDialog(false)} outlined size="small" />
                         <Button label="Save" icon="pi pi-check" onClick={handleAddVehicle} severity="success" raised size="small" />
                     </div>
                 }
             >
-                <div className="dialog-form pt-4">
+                <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
                     <FloatLabel>
                         <InputText
                             id="vehicleName"
@@ -292,6 +407,18 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </FloatLabel>
 
                     <FloatLabel>
+                        <Calendar
+                            id="startDate"
+                            value={vehicleForm.startDate}
+                            onChange={(e) => setVehicleForm((prev) => ({ ...prev, startDate: e.value as Date }))}
+                            dateFormat="dd/mm/yy"
+                            showIcon
+                            className="w-full"
+                        />
+                        <label htmlFor="startDate">Start Date *</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
                         <Dropdown
                             id="status"
                             value={vehicleForm.status}
@@ -304,77 +431,130 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 </div>
             </Dialog>
 
+            {/* Edit Vehicle Dialog */}
             <Dialog
-                header={`Fuel Entries - ${selectedVehicle?.vehicleName || ""}`}
-                visible={showFuelDialog}
-                style={{ width: "850px", maxWidth: "95vw" }}
+                header="Edit Vehicle"
+                visible={showEditDialog}
+                style={{ width: "500px" }}
                 onHide={() => {
-                    setShowFuelDialog(false);
+                    setShowEditDialog(false);
                     setSelectedVehicle(null);
                 }}
+                footer={
+                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
+                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowEditDialog(false)} outlined size="small" />
+                        <Button label="Update" icon="pi pi-check" onClick={handleEditVehicle} severity="success" raised size="small" />
+                    </div>
+                }
+            >
+                <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
+                    <FloatLabel>
+                        <InputText
+                            id="editVehicleName"
+                            value={vehicleForm.vehicleName}
+                            onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleName: e.target.value }))}
+                            className="w-full"
+                        />
+                        <label htmlFor="editVehicleName">Vehicle Name *</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <InputText
+                            id="editVehicleNumber"
+                            value={vehicleForm.vehicleNumber}
+                            onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleNumber: e.target.value }))}
+                            className="w-full"
+                        />
+                        <label htmlFor="editVehicleNumber">Vehicle Number *</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <Dropdown
+                            id="editVehicleType"
+                            value={vehicleForm.vehicleType}
+                            options={VEHICLE_TYPES.map((t) => ({ label: t, value: t }))}
+                            onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleType: e.value }))}
+                            className="w-full"
+                        />
+                        <label htmlFor="editVehicleType">Vehicle Type</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <Dropdown
+                            id="editFuelType"
+                            value={vehicleForm.fuelType}
+                            options={FUEL_TYPES.map((t) => ({ label: t, value: t }))}
+                            onChange={(e) => setVehicleForm((prev) => ({ ...prev, fuelType: e.value }))}
+                            className="w-full"
+                        />
+                        <label htmlFor="editFuelType">Fuel Type</label>
+                    </FloatLabel>
+                </div>
+            </Dialog>
+
+            {/* Status Change Dialog */}
+            <Dialog
+                header={selectedVehicle?.status === "Active" ? "Deactivate Vehicle" : "Activate Vehicle"}
+                visible={showStatusDialog}
+                style={{ width: "450px" }}
+                onHide={() => {
+                    setShowStatusDialog(false);
+                    setSelectedVehicle(null);
+                }}
+                footer={
+                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
+                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowStatusDialog(false)} outlined size="small" />
+                        <Button
+                            label={selectedVehicle?.status === "Active" ? "Deactivate" : "Activate"}
+                            icon="pi pi-check"
+                            onClick={handleStatusChange}
+                            severity={selectedVehicle?.status === "Active" ? "danger" : "success"}
+                            raised
+                            size="small"
+                        />
+                    </div>
+                }
             >
                 {selectedVehicle && (
-                    <div>
-                        <DataTable
-                            value={vehicleFuelEntries}
-                            paginator
-                            rows={5}
-                            dataKey="id"
-                            emptyMessage="No fuel entries found for this vehicle"
-                            className="custom-datatable"
-                            stripedRows
-                        >
-                            <Column field="date" header="Date" body={dateTemplate} sortable style={{ minWidth: '120px' }} />
-                            <Column
-                                field="supplierName"
-                                header="Supplier"
-                                body={(rowData: FuelEntry) => <span className="text-700">{rowData.supplierName}</span>}
-                                sortable
-                                style={{ minWidth: '150px' }}
+                    <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
+                        <div style={{
+                            background: 'var(--bg-secondary)',
+                            padding: 'var(--spacing-4)',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border-color)'
+                        }}>
+                            <div style={{ fontWeight: 600, marginBottom: 'var(--spacing-2)' }}>
+                                {selectedVehicle.vehicleName}
+                            </div>
+                            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
+                                {selectedVehicle.vehicleNumber}
+                            </div>
+                        </div>
+
+                        <FloatLabel>
+                            <Calendar
+                                id="statusChangeDate"
+                                value={statusChangeDate}
+                                onChange={(e) => setStatusChangeDate(e.value as Date)}
+                                dateFormat="dd/mm/yy"
+                                showIcon
+                                className="w-full"
                             />
-                            <Column
-                                field="litres"
-                                header="Litres"
-                                body={(rowData: FuelEntry) => <span className="font-medium">{numberTemplate(rowData.litres, 2)} L</span>}
-                                sortable
-                                style={{ minWidth: '100px' }}
+                            <label htmlFor="statusChangeDate">
+                                {selectedVehicle.status === "Active" ? "End Date *" : "Start Date *"}
+                            </label>
+                        </FloatLabel>
+
+                        <FloatLabel>
+                            <InputTextarea
+                                id="statusChangeReason"
+                                value={statusChangeReason}
+                                onChange={(e) => setStatusChangeReason(e.target.value)}
+                                rows={3}
+                                className="w-full"
                             />
-                            <Column
-                                field="distance"
-                                header="Distance"
-                                body={(rowData: FuelEntry) =>
-                                    rowData.status === "closed" ? (
-                                        <span className="font-medium text-green-600">{numberTemplate(rowData.distance, 1)} km</span>
-                                    ) : (
-                                        <span className="text-500">—</span>
-                                    )
-                                }
-                                sortable
-                                style={{ minWidth: '110px' }}
-                            />
-                            <Column
-                                field="mileage"
-                                header="Mileage"
-                                body={(rowData: FuelEntry) =>
-                                    rowData.status === "closed" ? (
-                                        <span className="font-medium text-green-600">{numberTemplate(rowData.mileage, 2)} km/l</span>
-                                    ) : (
-                                        <span className="text-500">—</span>
-                                    )
-                                }
-                                sortable
-                                style={{ minWidth: '110px' }}
-                            />
-                            <Column
-                                header="Status"
-                                body={(rowData: FuelEntry) => (
-                                    <span className={`font-medium ${rowData.status === "closed" ? 'text-green-600' : 'text-orange-600'}`}>
-                                        {rowData.status === "closed" ? "Closed" : "Open"}
-                                    </span>
-                                )}
-                                style={{ minWidth: '100px' }}
-                            />
-                        </DataTable>
+                            <label htmlFor="statusChangeReason">Reason *</label>
+                        </FloatLabel>
                     </div>
                 )}
             </Dialog>

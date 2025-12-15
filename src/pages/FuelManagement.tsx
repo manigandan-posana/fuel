@@ -10,8 +10,6 @@ import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
 import { Card } from "primereact/card";
 import { FloatLabel } from "primereact/floatlabel";
-import { Tag } from "primereact/tag";
-import { Chip } from "primereact/chip";
 import toast from "react-hot-toast";
 import type { Vehicle, FuelEntry, Supplier, ProjectId, FuelType } from "../types";
 

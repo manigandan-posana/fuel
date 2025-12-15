@@ -16,6 +16,14 @@ export interface Vehicle {
   vehicleType: VehicleType;
   fuelType: FuelType;
   status: "Active" | "Inactive";
+  startDate?: Date;
+  endDate?: Date;
+  statusHistory?: Array<{
+    status: "Active" | "Inactive";
+    startDate: Date;
+    endDate?: Date;
+    reason?: string;
+  }>;
 }
 
 export interface Supplier {

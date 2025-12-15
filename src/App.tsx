@@ -5,6 +5,7 @@ import BottomTabs from "./components/BottomTabs";
 import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import VehicleManagement from "./pages/VehicleManagement";
+import VehicleDetails from "./pages/VehicleDetails";
 import FuelManagement from "./pages/FuelManagement";
 import TodayEntries from "./pages/TodayEntries";
 import SupplierManagement from "./pages/SupplierManagement";
@@ -22,7 +23,19 @@ const App: React.FC = () => {
 
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
     const saved = localStorage.getItem("vehicles");
-    return saved ? JSON.parse(saved) : INITIAL_VEHICLES;
+    if (saved) {
+      return JSON.parse(saved).map((v: any) => ({
+        ...v,
+        startDate: v.startDate ? new Date(v.startDate) : undefined,
+        endDate: v.endDate ? new Date(v.endDate) : undefined,
+        statusHistory: v.statusHistory?.map((h: any) => ({
+          ...h,
+          startDate: new Date(h.startDate),
+          endDate: h.endDate ? new Date(h.endDate) : undefined
+        }))
+      }));
+    }
+    return INITIAL_VEHICLES;
   });
 
   const [fuelEntries, setFuelEntries] = useState<FuelEntry[]>(() => {
@@ -35,6 +48,7 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_SUPPLIERS;
   });
   const [activeMenu, setActiveMenu] = useState("dashboard");
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
 
@@ -106,6 +120,15 @@ const App: React.FC = () => {
           />
         );
       case "vehicles":
+        if (selectedVehicle) {
+          return (
+            <VehicleDetails
+              vehicle={selectedVehicle}
+              fuelEntries={fuelEntries}
+              onBack={() => setSelectedVehicle(null)}
+            />
+          );
+        }
         return (
           <VehicleManagement
             selectedProject={selectedProject}
@@ -114,6 +137,7 @@ const App: React.FC = () => {
             onAddVehicle={handleAddVehicle}
             onDeleteVehicle={handleDeleteVehicle}
             onUpdateVehicle={handleUpdateVehicle}
+            onViewVehicle={(vehicle) => setSelectedVehicle(vehicle)}
           />
         );
       case "fuel":
