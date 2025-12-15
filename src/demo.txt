@@ -1,0 +1,1483 @@
+// Professional Vehicle & Fuel Management System with PrimeReact & PrimeFlex
+import React, { useMemo, useState } from "react";
+import type { ChangeEvent } from "react";
+
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { Calendar } from "primereact/calendar";
+import { InputNumber } from "primereact/inputnumber";
+import { Card } from "primereact/card";
+import { TabView, TabPanel } from "primereact/tabview";
+import { Tag } from "primereact/tag";
+import { Dialog } from "primereact/dialog";
+import { Divider } from "primereact/divider";
+import { Chip } from "primereact/chip";
+import { Message } from "primereact/message";
+import toast, { Toaster } from "react-hot-toast";
+
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import "primeflex/primeflex.css";
+
+// ===== TYPES =====
+type ProjectId = "Project A" | "Project B";
+type FuelType = "Petrol" | "Diesel" | "Electric";
+type VehicleType =
+  | "Own Vehicle"
+  | "Rent – Monthly"
+  | "Rent – Daily"
+  | "Rent – Hourly";
+
+interface Vehicle {
+  id: string;
+  projectId: ProjectId;
+  vehicleName: string;
+  vehicleNumber: string;
+  vehicleType: VehicleType;
+  fuelType: FuelType;
+}
+
+interface FuelEntry {
+  id: string;
+  date: Date;
+  projectId: ProjectId;
+  vehicleId: string;
+  vehicleName: string;
+  fuelType: FuelType;
+  litres: number;
+  openingKm: number;
+  closingKm: number;
+  distance: number;
+  mileage: number;
+  openingKmPhoto?: string;
+  closingKmPhoto?: string;
+}
+
+// ===== INITIAL DATA =====
+const PROJECTS: ProjectId[] = ["Project A", "Project B"];
+const VEHICLE_TYPES: VehicleType[] = [
+  "Own Vehicle",
+  "Rent – Monthly",
+  "Rent – Daily",
+  "Rent – Hourly",
+];
+const FUEL_TYPES: FuelType[] = ["Petrol", "Diesel", "Electric"];
+
+const INITIAL_VEHICLES: Vehicle[] = [
+  {
+    id: "v1",
+    projectId: "Project A",
+    vehicleName: "Tipper Lorry 1",
+    vehicleNumber: "TN 01 AB 1234",
+    vehicleType: "Own Vehicle",
+    fuelType: "Diesel",
+  },
+  {
+    id: "v2",
+    projectId: "Project A",
+    vehicleName: "Site Car",
+    vehicleNumber: "TN 02 CD 5678",
+    vehicleType: "Rent – Daily",
+    fuelType: "Petrol",
+  },
+  {
+    id: "v3",
+    projectId: "Project B",
+    vehicleName: "Pickup Van",
+    vehicleNumber: "TN 03 EF 9012",
+    vehicleType: "Rent – Monthly",
+    fuelType: "Diesel",
+  },
+  {
+    id: "v4",
+    projectId: "Project A",
+    vehicleName: "Excavator Transport",
+    vehicleNumber: "TN 04 GH 3456",
+    vehicleType: "Rent – Hourly",
+    fuelType: "Diesel",
+  },
+  {
+    id: "v5",
+    projectId: "Project B",
+    vehicleName: "Staff Car",
+    vehicleNumber: "TN 05 IJ 7890",
+    vehicleType: "Own Vehicle",
+    fuelType: "Petrol",
+  },
+];
+
+const INITIAL_FUEL_ENTRIES: FuelEntry[] = [
+  {
+    id: "f1",
+    date: new Date(),
+    projectId: "Project A",
+    vehicleId: "v1",
+    vehicleName: "Tipper Lorry 1",
+    fuelType: "Diesel",
+    litres: 50.5,
+    openingKm: 1200.0,
+    closingKm: 1350.5,
+    distance: 150.5,
+    mileage: 2.98,
+  },
+  {
+    id: "f2",
+    date: new Date(Date.now() - 86400000),
+    projectId: "Project A",
+    vehicleId: "v1",
+    vehicleName: "Tipper Lorry 1",
+    fuelType: "Diesel",
+    litres: 45.0,
+    openingKm: 1050.0,
+    closingKm: 1200.0,
+    distance: 150.0,
+    mileage: 3.33,
+  },
+  {
+    id: "f3",
+    date: new Date(),
+    projectId: "Project A",
+    vehicleId: "v2",
+    vehicleName: "Site Car",
+    fuelType: "Petrol",
+    litres: 30.0,
+    openingKm: 5500.0,
+    closingKm: 5920.0,
+    distance: 420.0,
+    mileage: 14.0,
+  },
+  {
+    id: "f4",
+    date: new Date(Date.now() - 172800000),
+    projectId: "Project A",
+    vehicleId: "v2",
+    vehicleName: "Site Car",
+    fuelType: "Petrol",
+    litres: 28.5,
+    openingKm: 5150.0,
+    closingKm: 5500.0,
+    distance: 350.0,
+    mileage: 12.28,
+  },
+  {
+    id: "f5",
+    date: new Date(Date.now() - 86400000),
+    projectId: "Project B",
+    vehicleId: "v3",
+    vehicleName: "Pickup Van",
+    fuelType: "Diesel",
+    litres: 40.0,
+    openingKm: 8500.0,
+    closingKm: 8680.0,
+    distance: 180.0,
+    mileage: 4.5,
+  },
+];
+
+// ===== MAIN COMPONENT =====
+const App: React.FC = () => {
+  // State
+  const [selectedProject, setSelectedProject] =
+    useState<ProjectId>("Project A");
+  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
+  const [fuelEntries, setFuelEntries] =
+    useState<FuelEntry[]>(INITIAL_FUEL_ENTRIES);
+
+  const [activeTab, setActiveTab] = useState(0);
+  const [activeFuelType, setActiveFuelType] =
+    useState<FuelType>("Petrol");
+  const [selectedVehicleFilter, setSelectedVehicleFilter] = useState<
+    string | null
+  >(null);
+
+  // Vehicle Dialog
+  const [showVehicleDialog, setShowVehicleDialog] = useState(false);
+  const [vehicleForm, setVehicleForm] = useState<{
+    vehicleName: string;
+    vehicleNumber: string;
+    vehicleType: VehicleType;
+    fuelType: FuelType;
+  }>({
+    vehicleName: "",
+    vehicleNumber: "",
+    vehicleType: "Own Vehicle",
+    fuelType: "Petrol",
+  });
+
+  // Fuel Dialog
+  const [showFuelDialog, setShowFuelDialog] = useState(false);
+  const [fuelForm, setFuelForm] = useState<{
+    date: Date;
+    vehicleId: string;
+    litres: number;
+    openingKm: number;
+    closingKm: number;
+    openingKmPhoto: string;
+    closingKmPhoto: string;
+  }>({
+    date: new Date(),
+    vehicleId: "",
+    litres: 0,
+    openingKm: 0,
+    closingKm: 0,
+    openingKmPhoto: "",
+    closingKmPhoto: "",
+  });
+
+  // ===== DERIVED DATA =====
+  const projectVehicles = useMemo(
+    () => vehicles.filter((v) => v.projectId === selectedProject),
+    [vehicles, selectedProject]
+  );
+
+  const fuelTypeVehicles = useMemo(
+    () =>
+      projectVehicles.filter(
+        (v) => v.fuelType === activeFuelType
+      ),
+    [projectVehicles, activeFuelType]
+  );
+
+  const projectFuelEntries = useMemo(
+    () =>
+      fuelEntries.filter(
+        (e) => e.projectId === selectedProject
+      ),
+    [fuelEntries, selectedProject]
+  );
+
+  const filteredFuelEntries = useMemo(() => {
+    let filtered = fuelEntries.filter(
+      (e) =>
+        e.projectId === selectedProject &&
+        e.fuelType === activeFuelType
+    );
+    if (selectedVehicleFilter) {
+      filtered = filtered.filter(
+        (e) => e.vehicleId === selectedVehicleFilter
+      );
+    }
+    return filtered
+      .slice()
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [
+    fuelEntries,
+    selectedProject,
+    activeFuelType,
+    selectedVehicleFilter,
+  ]);
+
+  const cumulativeDistance = useMemo(
+    () =>
+      filteredFuelEntries.reduce(
+        (sum, e) => sum + e.distance,
+        0
+      ),
+    [filteredFuelEntries]
+  );
+
+  const todayEntries = useMemo(() => {
+    const today = new Date().toDateString();
+    return fuelEntries.filter(
+      (e) =>
+        e.projectId === selectedProject &&
+        e.date.toDateString() === today
+    );
+  }, [fuelEntries, selectedProject]);
+
+  const projectTotalDistance = useMemo(
+    () =>
+      projectFuelEntries.reduce(
+        (sum, e) => sum + e.distance,
+        0
+      ),
+    [projectFuelEntries]
+  );
+
+  const projectTotalLitres = useMemo(
+    () =>
+      projectFuelEntries.reduce(
+        (sum, e) => sum + e.litres,
+        0
+      ),
+    [projectFuelEntries]
+  );
+
+  const projectAverageMileage = useMemo(
+    () =>
+      projectTotalLitres > 0
+        ? projectTotalDistance / projectTotalLitres
+        : 0,
+    [projectTotalDistance, projectTotalLitres]
+  );
+
+  // ===== HANDLERS =====
+  const handleAddVehicle = () => {
+    if (
+      !vehicleForm.vehicleName.trim() ||
+      !vehicleForm.vehicleNumber.trim()
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    const newVehicle: Vehicle = {
+      id: `v${Date.now()}`,
+      projectId: selectedProject,
+      ...vehicleForm,
+    };
+
+    setVehicles((prev) => [...prev, newVehicle]);
+    setShowVehicleDialog(false);
+    setVehicleForm({
+      vehicleName: "",
+      vehicleNumber: "",
+      vehicleType: "Own Vehicle",
+      fuelType: "Petrol",
+    });
+    toast.success("✅ Vehicle added successfully!");
+  };
+
+  const handleAddFuelEntry = () => {
+    if (!fuelForm.vehicleId) {
+      toast.error("Please select a vehicle");
+      return;
+    }
+    if (fuelForm.litres <= 0) {
+      toast.error("Litres must be greater than 0");
+      return;
+    }
+    if (fuelForm.closingKm < fuelForm.openingKm) {
+      toast.error("Closing km must be ≥ opening km");
+      return;
+    }
+
+    const vehicle = vehicles.find(
+      (v) => v.id === fuelForm.vehicleId
+    );
+    if (!vehicle) {
+      toast.error("Vehicle not found");
+      return;
+    }
+
+    const distance = fuelForm.closingKm - fuelForm.openingKm;
+    const mileage = distance / fuelForm.litres;
+
+    const newEntry: FuelEntry = {
+      id: `f${Date.now()}`,
+      date: fuelForm.date,
+      projectId: selectedProject,
+      vehicleId: vehicle.id,
+      vehicleName: vehicle.vehicleName,
+      fuelType: vehicle.fuelType,
+      litres: fuelForm.litres,
+      openingKm: fuelForm.openingKm,
+      closingKm: fuelForm.closingKm,
+      distance,
+      mileage,
+      openingKmPhoto: fuelForm.openingKmPhoto || undefined,
+      closingKmPhoto: fuelForm.closingKmPhoto || undefined,
+    };
+
+    setFuelEntries((prev) => [newEntry, ...prev]);
+    setShowFuelDialog(false);
+    setFuelForm({
+      date: new Date(),
+      vehicleId: "",
+      litres: 0,
+      openingKm: 0,
+      closingKm: 0,
+      openingKmPhoto: "",
+      closingKmPhoto: "",
+    });
+    toast.success("⛽ Fuel entry added successfully!");
+  };
+
+  const handleFileUpload = (
+    field: "openingKmPhoto" | "closingKmPhoto",
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFuelForm((prev) => ({
+        ...prev,
+        [field]: file.name,
+      }));
+    }
+  };
+
+  const deleteVehicle = (id: string) => {
+    setVehicles((prev) => prev.filter((v) => v.id !== id));
+    toast.success("🗑️ Vehicle deleted");
+  };
+
+  const deleteFuelEntry = (id: string) => {
+    setFuelEntries((prev) =>
+      prev.filter((e) => e.id !== id)
+    );
+    toast.success("🗑️ Fuel entry deleted");
+  };
+
+  // ===== TEMPLATE FUNCTIONS =====
+  const vehicleTypeTemplate = (rowData: Vehicle) => (
+    <Tag
+      value={rowData.vehicleType}
+      severity="info"
+      icon="pi pi-car"
+      style={{ fontSize: "11px" }}
+    />
+  );
+
+  const fuelTypeTemplate = (
+    rowData: Vehicle | FuelEntry
+  ) => {
+    const severity =
+      rowData.fuelType === "Petrol"
+        ? "success"
+        : rowData.fuelType === "Diesel"
+        ? "warning"
+        : "info";
+    const icon =
+      rowData.fuelType === "Electric"
+        ? "pi pi-bolt"
+        : "pi pi-circle-fill";
+    return (
+      <Tag
+        value={rowData.fuelType}
+        severity={severity}
+        icon={icon}
+        style={{ fontSize: "11px" }}
+      />
+    );
+  };
+
+  const vehicleActionsTemplate = (rowData: Vehicle) => (
+    <Button
+      icon="pi pi-trash"
+      rounded
+      text
+      severity="danger"
+      onClick={() => deleteVehicle(rowData.id)}
+      tooltip="Delete"
+      tooltipOptions={{ position: "left" }}
+    />
+  );
+
+  const fuelActionsTemplate = (rowData: FuelEntry) => (
+    <Button
+      icon="pi pi-trash"
+      rounded
+      text
+      severity="danger"
+      onClick={() => deleteFuelEntry(rowData.id)}
+      tooltip="Delete"
+      tooltipOptions={{ position: "left" }}
+    />
+  );
+
+  const dateTemplate = (rowData: FuelEntry) =>
+    rowData.date.toLocaleDateString();
+
+  const numberTemplate = (
+    value: number,
+    decimals = 2
+  ) => value.toFixed(decimals);
+
+  const photosTemplate = (rowData: FuelEntry) => {
+    const hasOpening = !!rowData.openingKmPhoto;
+    const hasClosing = !!rowData.closingKmPhoto;
+
+    if (!hasOpening && !hasClosing) {
+      return (
+        <span
+          className="text-500"
+          style={{ fontSize: "11px" }}
+        >
+          —
+        </span>
+      );
+    }
+
+    return (
+      <div className="flex gap-1">
+        {hasOpening && (
+          <Tag
+            value="O"
+            severity="info"
+            icon="pi pi-camera"
+            style={{ fontSize: "10px" }}
+          />
+        )}
+        {hasClosing && (
+          <Tag
+            value="C"
+            severity="success"
+            icon="pi pi-camera"
+            style={{ fontSize: "10px" }}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // ===== RENDER =====
+  return (
+    <div
+      className="surface-ground min-h-screen p-2 md:p-3"
+      style={{ fontSize: "12px" }}
+    >
+      <Toaster position="top-right" />
+
+      <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+        {/* HEADER */}
+        <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-3 mb-3">
+          <div className="w-full md:w-auto">
+            <h1 className="text-xl md:text-2xl font-bold text-900 m-0 flex align-items-center gap-2">
+              <i
+                className="pi pi-car text-primary"
+                style={{ fontSize: "1.2rem" }}
+              ></i>
+              Vehicle & Fuel Management
+            </h1>
+            <p
+              className="text-600 mt-1 mb-0"
+              style={{ fontSize: "11px" }}
+            >
+              Compact dashboard for vehicle tracking and fuel
+              consumption.
+            </p>
+          </div>
+
+          <Card className="shadow-2 w-full md:w-auto border-1 surface-border">
+            <div className="flex align-items-center gap-2 flex-wrap">
+              <i
+                className="pi pi-briefcase text-primary"
+                style={{ fontSize: "12px" }}
+              ></i>
+              <label
+                className="font-semibold text-700"
+                style={{ fontSize: "12px" }}
+              >
+                Project:
+              </label>
+              <Dropdown
+                value={selectedProject}
+                options={PROJECTS.map((p) => ({
+                  label: p,
+                  value: p,
+                }))}
+                onChange={(e) => {
+                  setSelectedProject(e.value);
+                  setSelectedVehicleFilter(null);
+                }}
+                className="w-full md:w-12rem"
+                style={{ fontSize: "12px" }}
+              />
+            </div>
+          </Card>
+        </div>
+
+        {/* SUMMARY CARDS */}
+        <div className="grid mb-3">
+          <div className="col-12 md:col-4">
+            <Card className="shadow-1 border-1 surface-border">
+              <div className="flex align-items-center justify-content-between">
+                <div>
+                  <span
+                    className="text-600"
+                    style={{ fontSize: "11px" }}
+                  >
+                    Vehicles in project
+                  </span>
+                  <h3
+                    className="m-0 mt-1 text-900"
+                    style={{ fontSize: "20px" }}
+                  >
+                    {projectVehicles.length}
+                  </h3>
+                </div>
+                <i
+                  className="pi pi-car text-primary"
+                  style={{ fontSize: "1.5rem" }}
+                ></i>
+              </div>
+            </Card>
+          </div>
+          <div className="col-12 md:col-4">
+            <Card className="shadow-1 border-1 surface-border">
+              <div className="flex align-items-center justify-content-between">
+                <div>
+                  <span
+                    className="text-600"
+                    style={{ fontSize: "11px" }}
+                  >
+                    Total distance (all time)
+                  </span>
+                  <h3
+                    className="m-0 mt-1 text-900"
+                    style={{ fontSize: "20px" }}
+                  >
+                    {projectTotalDistance.toFixed(1)} km
+                  </h3>
+                </div>
+                <i
+                  className="pi pi-map-marker text-blue-500"
+                  style={{ fontSize: "1.5rem" }}
+                ></i>
+              </div>
+            </Card>
+          </div>
+          <div className="col-12 md:col-4">
+            <Card className="shadow-1 border-1 surface-border">
+              <div className="flex align-items-center justify-content-between">
+                <div>
+                  <span
+                    className="text-600"
+                    style={{ fontSize: "11px" }}
+                  >
+                    Avg mileage (project)
+                  </span>
+                  <h3
+                    className="m-0 mt-1 text-900"
+                    style={{ fontSize: "20px" }}
+                  >
+                    {projectAverageMileage.toFixed(2)} km/l
+                  </h3>
+                </div>
+                <i
+                  className="pi pi-chart-line text-green-500"
+                  style={{ fontSize: "1.5rem" }}
+                ></i>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* MAIN TABS */}
+        <Card className="shadow-3 border-round-xl border-1 surface-border">
+          <TabView
+            activeIndex={activeTab}
+            onTabChange={(e) => setActiveTab(e.index)}
+          >
+            {/* === VEHICLE MANAGEMENT TAB === */}
+            <TabPanel
+              header="Vehicle Management"
+              leftIcon="pi pi-car mr-2"
+            >
+              <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-2 mb-3">
+                <div className="w-full md:w-auto">
+                  <h2
+                    className="text-base md:text-lg font-semibold text-900 m-0"
+                    style={{ fontSize: "14px" }}
+                  >
+                    Vehicles – {selectedProject}
+                  </h2>
+                  <p
+                    className="text-600 mt-1 mb-0"
+                    style={{ fontSize: "11px" }}
+                  >
+                    Manage your fleet with vehicle type & fuel type.
+                  </p>
+                </div>
+                <Button
+                  label="Add Vehicle"
+                  icon="pi pi-plus"
+                  onClick={() => setShowVehicleDialog(true)}
+                  className="p-button-success w-full md:w-auto"
+                  style={{ fontSize: "12px" }}
+                />
+              </div>
+
+              <DataTable
+                value={projectVehicles}
+                paginator
+                rows={10}
+                dataKey="id"
+                emptyMessage="No vehicles found"
+                className="p-datatable-sm"
+                stripedRows
+                responsiveLayout="scroll"
+                style={{ fontSize: "12px" }}
+              >
+                <Column
+                  field="vehicleName"
+                  header="Vehicle Name"
+                  sortable
+                  body={(rowData: Vehicle) => (
+                    <span
+                      className="font-semibold"
+                      style={{ fontSize: "12px" }}
+                    >
+                      <i
+                        className="pi pi-car mr-2 text-primary"
+                        style={{ fontSize: "12px" }}
+                      ></i>
+                      {rowData.vehicleName}
+                    </span>
+                  )}
+                />
+                <Column
+                  field="vehicleNumber"
+                  header="Vehicle Number"
+                  sortable
+                  body={(rowData: Vehicle) => (
+                    <Chip
+                      label={rowData.vehicleNumber}
+                      icon="pi pi-tag"
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                />
+                <Column
+                  field="vehicleType"
+                  header="Type"
+                  body={vehicleTypeTemplate}
+                  sortable
+                />
+                <Column
+                  field="fuelType"
+                  header="Fuel Type"
+                  body={fuelTypeTemplate}
+                  sortable
+                />
+                <Column
+                  body={vehicleActionsTemplate}
+                  exportable={false}
+                  style={{ width: "3rem" }}
+                />
+              </DataTable>
+            </TabPanel>
+
+            {/* === FUEL MANAGEMENT TAB === */}
+            <TabPanel
+              header="Fuel Management"
+              leftIcon="pi pi-chart-line mr-2"
+            >
+              <div className="grid">
+                <div className="col-12 flex flex-column md:flex-row justify-content-between align-items-stretch md:align-items-center gap-2 mb-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      label="Petrol"
+                      icon="pi pi-bolt"
+                      severity={
+                        activeFuelType === "Petrol"
+                          ? "success"
+                          : "secondary"
+                      }
+                      onClick={() => {
+                        setActiveFuelType("Petrol");
+                        setSelectedVehicleFilter(null);
+                      }}
+                      style={{ fontSize: "12px" }}
+                      className="flex-1 md:flex-initial"
+                    />
+                    <Button
+                      label="Diesel"
+                      icon="pi pi-cog"
+                      severity={
+                        activeFuelType === "Diesel"
+                          ? "warning"
+                          : "secondary"
+                      }
+                      onClick={() => {
+                        setActiveFuelType("Diesel");
+                        setSelectedVehicleFilter(null);
+                      }}
+                      style={{ fontSize: "12px" }}
+                      className="flex-1 md:flex-initial"
+                    />
+                    <Button
+                      label="Electric"
+                      icon="pi pi-flash"
+                      severity={
+                        activeFuelType === "Electric"
+                          ? "info"
+                          : "secondary"
+                      }
+                      onClick={() => {
+                        setActiveFuelType("Electric");
+                        setSelectedVehicleFilter(null);
+                      }}
+                      style={{ fontSize: "12px" }}
+                      className="flex-1 md:flex-initial"
+                    />
+                  </div>
+                  <Button
+                    label="Add Fuel Entry"
+                    icon="pi pi-plus"
+                    onClick={() => setShowFuelDialog(true)}
+                    className="p-button-help w-full md:w-auto"
+                    style={{ fontSize: "12px" }}
+                  />
+                </div>
+
+                <div className="col-12 lg:col-6">
+                  <div className="flex flex-column md:flex-row align-items-start md:align-items-center gap-2">
+                    <label
+                      className="font-semibold text-700 white-space-nowrap"
+                      style={{ fontSize: "12px" }}
+                    >
+                      <i
+                        className="pi pi-filter mr-2"
+                        style={{ fontSize: "12px" }}
+                      ></i>
+                      Filter by Vehicle:
+                    </label>
+                    <Dropdown
+                      value={selectedVehicleFilter}
+                      options={[
+                        {
+                          label: "All Vehicles",
+                          value: null,
+                        },
+                        ...fuelTypeVehicles.map((v) => ({
+                          label: v.vehicleName,
+                          value: v.id,
+                        })),
+                      ]}
+                      onChange={(e) =>
+                        setSelectedVehicleFilter(e.value)
+                      }
+                      className="w-full"
+                      placeholder="Select a vehicle"
+                      style={{ fontSize: "12px" }}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-12 lg:col-6 flex align-items-center justify-content-end">
+                  <div className="flex gap-2 flex-wrap justify-content-end">
+                    <Chip
+                      label={`${filteredFuelEntries.length} entries`}
+                      icon="pi pi-database"
+                      className="p-chip-secondary"
+                      style={{ fontSize: "11px" }}
+                    />
+                    <Chip
+                      label={`${cumulativeDistance.toFixed(
+                        1
+                      )} km`}
+                      icon="pi pi-road"
+                      className="p-chip-info"
+                      style={{ fontSize: "11px" }}
+                    />
+                  </div>
+                </div>
+
+                {selectedVehicleFilter && (
+                  <div className="col-12">
+                    <Message
+                      severity="success"
+                      text={`Cumulative Distance for selected vehicle: ${cumulativeDistance.toFixed(
+                        2
+                      )} km`}
+                      icon="pi pi-chart-bar"
+                      style={{ fontSize: "12px" }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <Divider />
+
+              <DataTable
+                value={filteredFuelEntries}
+                paginator
+                rows={10}
+                dataKey="id"
+                emptyMessage={`No ${activeFuelType} fuel entries found`}
+                className="p-datatable-sm"
+                stripedRows
+                responsiveLayout="scroll"
+                style={{ fontSize: "12px" }}
+              >
+                <Column
+                  field="date"
+                  header="Date"
+                  body={dateTemplate}
+                  sortable
+                />
+                <Column
+                  field="vehicleName"
+                  header="Vehicle"
+                  sortable
+                  body={(rowData: FuelEntry) => (
+                    <span
+                      className="font-semibold"
+                      style={{ fontSize: "12px" }}
+                    >
+                      <i
+                        className="pi pi-car mr-2"
+                        style={{ fontSize: "12px" }}
+                      ></i>
+                      {rowData.vehicleName}
+                    </span>
+                  )}
+                />
+                <Column
+                  field="litres"
+                  header="Litres"
+                  body={(rowData: FuelEntry) => (
+                    <Chip
+                      label={`${numberTemplate(
+                        rowData.litres,
+                        2
+                      )} L`}
+                      icon="pi pi-circle-fill"
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                  sortable
+                />
+                <Column
+                  field="openingKm"
+                  header="Opening Km"
+                  body={(rowData: FuelEntry) => (
+                    <span style={{ fontSize: "12px" }}>
+                      {numberTemplate(
+                        rowData.openingKm,
+                        1
+                      )}
+                    </span>
+                  )}
+                  sortable
+                />
+                <Column
+                  field="closingKm"
+                  header="Closing Km"
+                  body={(rowData: FuelEntry) => (
+                    <span style={{ fontSize: "12px" }}>
+                      {numberTemplate(
+                        rowData.closingKm,
+                        1
+                      )}
+                    </span>
+                  )}
+                  sortable
+                />
+                <Column
+                  field="distance"
+                  header="Distance"
+                  body={(rowData: FuelEntry) => (
+                    <Tag
+                      value={`${numberTemplate(
+                        rowData.distance,
+                        1
+                      )} km`}
+                      severity="info"
+                      icon="pi pi-map-marker"
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                  sortable
+                />
+                <Column
+                  field="mileage"
+                  header="Mileage"
+                  body={(rowData: FuelEntry) => (
+                    <Tag
+                      value={`${numberTemplate(
+                        rowData.mileage,
+                        2
+                      )} km/l`}
+                      severity="success"
+                      icon="pi pi-chart-line"
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                  sortable
+                />
+                <Column
+                  header="Photos"
+                  body={photosTemplate}
+                />
+                <Column
+                  body={fuelActionsTemplate}
+                  exportable={false}
+                  style={{ width: "3rem" }}
+                />
+              </DataTable>
+            </TabPanel>
+
+            {/* === TODAY'S ENTRIES TAB === */}
+            <TabPanel
+              header="Today's Entries"
+              leftIcon="pi pi-calendar mr-2"
+            >
+              <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-2 gap-2">
+                <div>
+                  <h2
+                    className="text-base md:text-lg font-semibold text-900 m-0"
+                    style={{ fontSize: "14px" }}
+                  >
+                    Today&apos;s Fuel Entries – {selectedProject}
+                  </h2>
+                  <p
+                    className="text-600 mt-1 mb-0"
+                    style={{ fontSize: "11px" }}
+                  >
+                    Quick overview of today&apos;s fuel
+                    consumption.
+                  </p>
+                </div>
+                <Chip
+                  label={`${todayEntries.length} ${
+                    todayEntries.length === 1
+                      ? "Entry"
+                      : "Entries"
+                  }`}
+                  icon="pi pi-calendar"
+                  className="p-chip-info"
+                  style={{ fontSize: "11px" }}
+                />
+              </div>
+
+              <DataTable
+                value={todayEntries}
+                dataKey="id"
+                emptyMessage="No fuel entries recorded today"
+                className="p-datatable-sm"
+                stripedRows
+                responsiveLayout="scroll"
+                style={{ fontSize: "12px" }}
+              >
+                <Column
+                  field="vehicleName"
+                  header="Vehicle"
+                  sortable
+                  body={(rowData: FuelEntry) => (
+                    <span
+                      className="font-semibold"
+                      style={{ fontSize: "12px" }}
+                    >
+                      <i
+                        className="pi pi-car mr-2 text-primary"
+                        style={{ fontSize: "12px" }}
+                      ></i>
+                      {rowData.vehicleName}
+                    </span>
+                  )}
+                />
+                <Column
+                  field="fuelType"
+                  header="Fuel Type"
+                  body={fuelTypeTemplate}
+                  sortable
+                />
+                <Column
+                  field="litres"
+                  header="Litres"
+                  body={(rowData: FuelEntry) => (
+                    <Chip
+                      label={`${numberTemplate(
+                        rowData.litres,
+                        2
+                      )} L`}
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                  sortable
+                />
+                <Column
+                  field="openingKm"
+                  header="Opening Km"
+                  body={(rowData: FuelEntry) => (
+                    <span style={{ fontSize: "12px" }}>
+                      {numberTemplate(
+                        rowData.openingKm,
+                        1
+                      )}
+                    </span>
+                  )}
+                  sortable
+                />
+                <Column
+                  field="closingKm"
+                  header="Closing Km"
+                  body={(rowData: FuelEntry) => (
+                    <span style={{ fontSize: "12px" }}>
+                      {numberTemplate(
+                        rowData.closingKm,
+                        1
+                      )}
+                    </span>
+                  )}
+                  sortable
+                />
+                <Column
+                  field="distance"
+                  header="Distance"
+                  body={(rowData: FuelEntry) => (
+                    <Tag
+                      value={`${numberTemplate(
+                        rowData.distance,
+                        1
+                      )} km`}
+                      severity="info"
+                      icon="pi pi-map-marker"
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                  sortable
+                />
+                <Column
+                  field="mileage"
+                  header="Mileage"
+                  body={(rowData: FuelEntry) => (
+                    <Tag
+                      value={`${numberTemplate(
+                        rowData.mileage,
+                        2
+                      )} km/l`}
+                      severity="success"
+                      icon="pi pi-chart-line"
+                      style={{ fontSize: "11px" }}
+                    />
+                  )}
+                  sortable
+                />
+                <Column
+                  header="Photos"
+                  body={photosTemplate}
+                />
+              </DataTable>
+            </TabPanel>
+          </TabView>
+        </Card>
+
+        {/* === ADD VEHICLE DIALOG === */}
+        <Dialog
+          header={
+            <>
+              <i className="pi pi-car mr-2"></i>
+              Add New Vehicle
+            </>
+          }
+          visible={showVehicleDialog}
+          style={{ width: "500px" }}
+          onHide={() => setShowVehicleDialog(false)}
+          footer={
+            <>
+              <Button
+                label="Cancel"
+                icon="pi pi-times"
+                onClick={() => setShowVehicleDialog(false)}
+                className="p-button-text"
+              />
+              <Button
+                label="Save"
+                icon="pi pi-check"
+                onClick={handleAddVehicle}
+                autoFocus
+              />
+            </>
+          }
+        >
+          <div className="flex flex-column gap-3">
+            <div className="field">
+              <label
+                htmlFor="vehicleName"
+                className="font-semibold"
+              >
+                <i className="pi pi-car mr-2"></i>
+                Vehicle Name *
+              </label>
+              <InputText
+                id="vehicleName"
+                value={vehicleForm.vehicleName}
+                onChange={(e) =>
+                  setVehicleForm((prev) => ({
+                    ...prev,
+                    vehicleName: e.target.value,
+                  }))
+                }
+                placeholder="e.g., Tipper Lorry 1"
+                className="w-full"
+              />
+            </div>
+
+            <div className="field">
+              <label
+                htmlFor="vehicleNumber"
+                className="font-semibold"
+              >
+                <i className="pi pi-tag mr-2"></i>
+                Vehicle Number *
+              </label>
+              <InputText
+                id="vehicleNumber"
+                value={vehicleForm.vehicleNumber}
+                onChange={(e) =>
+                  setVehicleForm((prev) => ({
+                    ...prev,
+                    vehicleNumber: e.target.value,
+                  }))
+                }
+                placeholder="e.g., TN 01 AB 1234"
+                className="w-full"
+              />
+            </div>
+
+            <div className="field">
+              <label
+                htmlFor="vehicleType"
+                className="font-semibold"
+              >
+                <i className="pi pi-list mr-2"></i>
+                Vehicle Type
+              </label>
+              <Dropdown
+                id="vehicleType"
+                value={vehicleForm.vehicleType}
+                options={VEHICLE_TYPES.map((t) => ({
+                  label: t,
+                  value: t,
+                }))}
+                onChange={(e) =>
+                  setVehicleForm((prev) => ({
+                    ...prev,
+                    vehicleType: e.value,
+                  }))
+                }
+                className="w-full"
+              />
+            </div>
+
+            <div className="field">
+              <label
+                htmlFor="fuelType"
+                className="font-semibold"
+              >
+                <i className="pi pi-bolt mr-2"></i>
+                Fuel Type
+              </label>
+              <Dropdown
+                id="fuelType"
+                value={vehicleForm.fuelType}
+                options={FUEL_TYPES.map((t) => ({
+                  label: t,
+                  value: t,
+                }))}
+                onChange={(e) =>
+                  setVehicleForm((prev) => ({
+                    ...prev,
+                    fuelType: e.value,
+                  }))
+                }
+                className="w-full"
+              />
+            </div>
+          </div>
+        </Dialog>
+
+        {/* === ADD FUEL ENTRY DIALOG === */}
+        <Dialog
+          header={
+            <>
+              <i className="pi pi-chart-line mr-2"></i>
+              Add Fuel Entry
+            </>
+          }
+          visible={showFuelDialog}
+          style={{ width: "600px" }}
+          onHide={() => setShowFuelDialog(false)}
+          footer={
+            <>
+              <Button
+                label="Cancel"
+                icon="pi pi-times"
+                onClick={() => setShowFuelDialog(false)}
+                className="p-button-text"
+              />
+              <Button
+                label="Save"
+                icon="pi pi-check"
+                onClick={handleAddFuelEntry}
+                autoFocus
+              />
+            </>
+          }
+        >
+          <div className="flex flex-column gap-3">
+            <div className="field">
+              <label
+                htmlFor="date"
+                className="font-semibold"
+              >
+                <i className="pi pi-calendar mr-2"></i>
+                Date
+              </label>
+              <Calendar
+                id="date"
+                value={fuelForm.date}
+                onChange={(e) =>
+                  setFuelForm((prev) => ({
+                    ...prev,
+                    date: (e.value as Date) || new Date(),
+                  }))
+                }
+                dateFormat="dd/mm/yy"
+                className="w-full"
+              />
+            </div>
+
+            <div className="field">
+              <label
+                htmlFor="vehicle"
+                className="font-semibold"
+              >
+                <i className="pi pi-car mr-2"></i>
+                Vehicle *
+              </label>
+              <Dropdown
+                id="vehicle"
+                value={fuelForm.vehicleId}
+                options={fuelTypeVehicles.map((v) => ({
+                  label: `${v.vehicleName} (${v.vehicleNumber})`,
+                  value: v.id,
+                }))}
+                onChange={(e) =>
+                  setFuelForm((prev) => ({
+                    ...prev,
+                    vehicleId: e.value,
+                  }))
+                }
+                placeholder={`Select ${activeFuelType} vehicle`}
+                className="w-full"
+              />
+            </div>
+
+            <div className="grid">
+              <div className="col-6 field">
+                <label
+                  htmlFor="litres"
+                  className="font-semibold"
+                >
+                  <i className="pi pi-circle-fill mr-2"></i>
+                  Litres *
+                </label>
+                <InputNumber
+                  id="litres"
+                  value={fuelForm.litres}
+                  onValueChange={(e) =>
+                    setFuelForm((prev) => ({
+                      ...prev,
+                      litres: e.value || 0,
+                    }))
+                  }
+                  minFractionDigits={2}
+                  maxFractionDigits={2}
+                  min={0}
+                  className="w-full"
+                />
+              </div>
+              <div className="col-6 field">
+                <label
+                  htmlFor="openingKm"
+                  className="font-semibold"
+                >
+                  <i className="pi pi-sign-in mr-2"></i>
+                  Opening Km *
+                </label>
+                <InputNumber
+                  id="openingKm"
+                  value={fuelForm.openingKm}
+                  onValueChange={(e) =>
+                    setFuelForm((prev) => ({
+                      ...prev,
+                      openingKm: e.value || 0,
+                    }))
+                  }
+                  minFractionDigits={1}
+                  maxFractionDigits={1}
+                  min={0}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label
+                htmlFor="closingKm"
+                className="font-semibold"
+              >
+                <i className="pi pi-sign-out mr-2"></i>
+                Closing Km *
+              </label>
+              <InputNumber
+                id="closingKm"
+                value={fuelForm.closingKm}
+                onValueChange={(e) =>
+                  setFuelForm((prev) => ({
+                    ...prev,
+                    closingKm: e.value || 0,
+                  }))
+                }
+                minFractionDigits={1}
+                maxFractionDigits={1}
+                min={0}
+                className="w-full"
+              />
+            </div>
+
+            <Divider />
+
+            <div className="field">
+              <label
+                htmlFor="openingPhoto"
+                className="font-semibold"
+              >
+                <i className="pi pi-camera mr-2"></i>
+                Opening Km Photo
+              </label>
+              <input
+                id="openingPhoto"
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload("openingKmPhoto", e)
+                }
+                className="w-full"
+              />
+              {fuelForm.openingKmPhoto && (
+                <small className="text-600">
+                  {fuelForm.openingKmPhoto}
+                </small>
+              )}
+            </div>
+
+            <div className="field">
+              <label
+                htmlFor="closingPhoto"
+                className="font-semibold"
+              >
+                <i className="pi pi-camera mr-2"></i>
+                Closing Km Photo
+              </label>
+              <input
+                id="closingPhoto"
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload("closingKmPhoto", e)
+                }
+                className="w-full"
+              />
+              {fuelForm.closingKmPhoto && (
+                <small className="text-600">
+                  {fuelForm.closingKmPhoto}
+                </small>
+              )}
+            </div>
+          </div>
+        </Dialog>
+      </div>
+    </div>
+  );
+};
+
+export default App;
