@@ -21,8 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         { id: "dashboard", label: "Dashboard", icon: "pi-chart-bar" },
         { id: "vehicles", label: "Vehicle", icon: "pi-car" },
         { id: "fuel", label: "Fuel", icon: "pi-chart-line" },
-        { id: "suppliers", label: "Suppliers", icon: "pi-building" },
         { id: "today", label: "Daily Log", icon: "pi-calendar" },
+        { id: "suppliers", label: "Suppliers", icon: "pi-building" },
     ];
 
     return (
