@@ -359,76 +359,103 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 </div>
             </div>
 
-            {/* Filters (single line / compact) */}
             <Card className="fm-card fm-filters-card">
                 <div className="fm-filters-row">
-                    <span className="p-input-icon-left fm-ctl fm-ctl-search">
-                        <i className="pi pi-search" />
+                    {/* Search */}
+                    <FloatLabel className="fm-fi fm-fi-search">
                         <InputText
+                            id="filter-search"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search vehicle / supplier"
                             className="p-inputtext-sm fm-input"
                         />
-                    </span>
+                        <i className="pi pi-search fm-search-ico" />
+                        <label htmlFor="filter-search">Search vehicle / supplier</label>
+                    </FloatLabel>
 
-                    <Dropdown
-                        value={selectedVehicleFilter}
-                        options={[
-                            { label: "All Vehicles", value: null },
-                            ...fuelTypeVehicles.map((v) => ({ label: v.vehicleName, value: v.id })),
-                        ]}
-                        onChange={(e) => setSelectedVehicleFilter(e.value)}
-                        placeholder="Vehicle"
-                        showClear
-                        className="p-inputtext-sm fm-dd fm-ctl"
-                    />
+                    {/* Vehicle Filter - PrimeReact Dropdown */}
+                    <FloatLabel className="fm-fi">
+                        <Dropdown
+                            inputId="filter-vehicle"
+                            value={selectedVehicleFilter}
+                            onChange={(e) => setSelectedVehicleFilter(e.value)}
+                            options={[
+                                { label: "All Vehicles", value: null },
+                                ...fuelTypeVehicles.map((v) => ({ label: v.vehicleName, value: v.id }))
+                            ]}
+                            optionLabel="label"
+                            placeholder=" "
+                            className="p-inputtext-sm w-full"
+                        />
+                        <label htmlFor="filter-vehicle">Vehicle</label>
+                    </FloatLabel>
 
-                    <Dropdown
-                        value={supplierFilter}
-                        options={[
-                            { label: "All Suppliers", value: null },
-                            ...projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id })),
-                        ]}
-                        onChange={(e) => setSupplierFilter(e.value)}
-                        placeholder="Supplier"
-                        showClear
-                        className="p-inputtext-sm fm-dd fm-ctl"
-                    />
+                    {/* Supplier Filter - PrimeReact Dropdown */}
+                    <FloatLabel className="fm-fi">
+                        <Dropdown
+                            inputId="filter-supplier"
+                            value={supplierFilter}
+                            onChange={(e) => setSupplierFilter(e.value)}
+                            options={[
+                                { label: "All Suppliers", value: null },
+                                ...projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))
+                            ]}
+                            optionLabel="label"
+                            placeholder=" "
+                            className="p-inputtext-sm w-full"
+                        />
+                        <label htmlFor="filter-supplier">Supplier</label>
+                    </FloatLabel>
 
-                    <Dropdown
-                        value={statusFilter}
-                        options={[
-                            { label: "All Status", value: null },
-                            { label: "Open", value: "open" },
-                            { label: "Closed", value: "closed" },
-                        ]}
-                        onChange={(e) => setStatusFilter(e.value)}
-                        placeholder="Status"
-                        showClear
-                        className="p-inputtext-sm fm-dd fm-ctl"
-                    />
+                    {/* Status Filter - PrimeReact Dropdown */}
+                    <FloatLabel className="fm-fi fm-fi-sm">
+                        <Dropdown
+                            inputId="filter-status"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.value)}
+                            options={[
+                                { label: "All Status", value: null },
+                                { label: "Open", value: "open" },
+                                { label: "Closed", value: "closed" }
+                            ]}
+                            optionLabel="label"
+                            placeholder=" "
+                            className="p-inputtext-sm w-full"
+                        />
+                        <label htmlFor="filter-status">Status</label>
+                    </FloatLabel>
 
-                    <Calendar
-                        value={dateFrom}
-                        onChange={(e) => setDateFrom(e.value as Date)}
-                        placeholder="From"
-                        dateFormat="dd/mm/yy"
-                        showIcon
-                        showButtonBar
-                        className="p-inputtext-sm fm-cal fm-ctl"
-                    />
+                    {/* Date From */}
+                    <FloatLabel className="fm-fi fm-fi-date">
+                        <Calendar
+                            inputId="filter-date-from"
+                            value={dateFrom}
+                            onChange={(e) => setDateFrom(e.value as Date)}
+                            dateFormat="dd/mm/yy"
+                            showIcon
+                            showButtonBar
+                            placeholder=" "
+                            className="p-inputtext-sm fm-cal"
+                        />
+                        <label htmlFor="filter-date-from">From Date</label>
+                    </FloatLabel>
 
-                    <Calendar
-                        value={dateTo}
-                        onChange={(e) => setDateTo(e.value as Date)}
-                        placeholder="To"
-                        dateFormat="dd/mm/yy"
-                        showIcon
-                        showButtonBar
-                        className="p-inputtext-sm fm-cal fm-ctl"
-                    />
+                    {/* Date To */}
+                    <FloatLabel className="fm-fi fm-fi-date">
+                        <Calendar
+                            inputId="filter-date-to"
+                            value={dateTo}
+                            onChange={(e) => setDateTo(e.value as Date)}
+                            dateFormat="dd/mm/yy"
+                            showIcon
+                            showButtonBar
+                            placeholder=" "
+                            className="p-inputtext-sm fm-cal"
+                        />
+                        <label htmlFor="filter-date-to">To Date</label>
+                    </FloatLabel>
 
+                    {/* Clear Button */}
                     <Button
                         label="Clear"
                         icon="pi pi-filter-slash"
@@ -443,10 +470,12 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                             setDateTo(null);
                         }}
                         disabled={!anyFilterActive}
-                        className="fm-ctl fm-clear"
+                        className="fm-clear-btn"
                     />
                 </div>
             </Card>
+
+
 
             {/* Optional message (kept, but compact) */}
             {selectedVehicleFilter && (
@@ -485,25 +514,31 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
 
                     <FloatLabel className="fm-fl fm-grow">
                         <Dropdown
-                            id="entryVehicle"
+                            inputId="entryVehicle"
                             value={newEntry.vehicleId}
                             options={fuelTypeVehicles.map((v) => ({
                                 label: `${v.vehicleName} (${v.vehicleNumber})`,
                                 value: v.id,
                             }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setNewEntry((prev) => ({ ...prev, vehicleId: e.value }))}
-                            className="p-inputtext-sm fm-dd"
+                            placeholder=" "
+                            className="p-inputtext-sm fm-dd w-full"
                         />
                         <label htmlFor="entryVehicle">Vehicle</label>
                     </FloatLabel>
 
                     <FloatLabel className="fm-fl fm-grow">
                         <Dropdown
-                            id="entrySupplier"
+                            inputId="entrySupplier"
                             value={newEntry.supplierId}
                             options={projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setNewEntry((prev) => ({ ...prev, supplierId: e.value }))}
-                            className="p-inputtext-sm fm-dd"
+                            placeholder=" "
+                            className="p-inputtext-sm fm-dd w-full"
                         />
                         <label htmlFor="entrySupplier">Supplier</label>
                     </FloatLabel>
@@ -771,19 +806,17 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
           box-shadow: 0 6px 16px rgba(0,0,0,.08);
         }
 
-        /* Filters: single line */
-        .fm-filters-card{padding:8px}
+        /* Filters: wrapping row with FloatLabel */
+        .fm-filters-card{padding:10px}
         .fm-filters-row{
-          display:flex;align-items:center;gap:8px;
-          overflow-x:auto;overflow-y:hidden;
-          padding-bottom:2px;
-          scrollbar-width: thin;
+          display:flex;align-items:flex-end;gap:8px;
+          flex-wrap:wrap;
         }
         .fm-ctl{flex:0 0 auto}
-        .fm-ctl-search{min-width:240px}
-        .fm-dd{min-width:170px}
-        .fm-cal{min-width:150px}
-        .fm-clear{min-width:110px}
+        .fm-ctl-search{min-width:240px;flex:1}
+        .fm-dd-wrap{min-width:170px}
+        .fm-cal-wrap{min-width:150px}
+        .fm-clear{min-width:110px;height:36px}
         .fm-input{width:100%}
         .fm-filters-row .p-dropdown,
         .fm-filters-row .p-calendar,
