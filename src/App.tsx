@@ -50,6 +50,10 @@ const App: React.FC = () => {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
   };
 
+  const handleUpdateVehicle = (id: string, updates: Partial<Vehicle>) => {
+    setVehicles((prev) => prev.map((v) => v.id === id ? { ...v, ...updates } : v));
+  };
+
   const handleAddFuelEntry = (entry: Omit<FuelEntry, "id">) => {
     const newEntry: FuelEntry = {
       id: `f${Date.now()}`,
@@ -109,6 +113,7 @@ const App: React.FC = () => {
             fuelEntries={fuelEntries}
             onAddVehicle={handleAddVehicle}
             onDeleteVehicle={handleDeleteVehicle}
+            onUpdateVehicle={handleUpdateVehicle}
           />
         );
       case "fuel":

@@ -194,14 +194,22 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
 
     const barOptions = {
         maintainAspectRatio: false,
-        indexAxis: 'y' as const,
         plugins: {
             legend: {
-                display: false
+                display: true,
+                position: 'bottom' as const,
+                labels: {
+                    usePointStyle: true,
+                    padding: 15,
+                    font: {
+                        size: 11
+                    }
+                }
             }
         },
         scales: {
             x: {
+                stacked: false,
                 grid: {
                     display: true,
                     color: '#f3f4f6'
@@ -213,6 +221,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
                 }
             },
             y: {
+                stacked: false,
                 grid: {
                     display: false
                 },
@@ -233,83 +242,139 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
             {/* Stats Cards */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                 gap: 'var(--spacing-4)',
                 marginBottom: 'var(--spacing-5)'
             }}>
                 <Card style={{
-                    background: 'white',
-                    border: '1px solid var(--border-color)',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    border: 'none',
                     borderRadius: 'var(--radius-md)',
-                    padding: 'var(--spacing-4)'
+                    padding: 'var(--spacing-4)',
+                    color: 'white'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-1)' }}>
+                            <div style={{ fontSize: 'var(--font-xs)', opacity: 0.9, marginBottom: 'var(--spacing-1)' }}>
                                 Total Fuel Cost
                             </div>
-                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700 }}>
                                 {formatCurrency(stats.totalCost)}
                             </div>
+                            <div style={{ fontSize: '9px', opacity: 0.8, marginTop: 'var(--spacing-1)' }}>
+                                {projectFuelEntries.length} transactions
+                            </div>
                         </div>
-                        <i className="pi pi-indian-rupee" style={{ fontSize: '20px', color: 'var(--primary-500)' }}></i>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <i className="pi pi-indian-rupee" style={{ fontSize: '18px' }}></i>
+                        </div>
                     </div>
                 </Card>
 
                 <Card style={{
-                    background: 'white',
-                    border: '1px solid var(--border-color)',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    border: 'none',
                     borderRadius: 'var(--radius-md)',
-                    padding: 'var(--spacing-4)'
+                    padding: 'var(--spacing-4)',
+                    color: 'white'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-1)' }}>
+                            <div style={{ fontSize: 'var(--font-xs)', opacity: 0.9, marginBottom: 'var(--spacing-1)' }}>
                                 Total Distance
                             </div>
-                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700 }}>
                                 {formatNumber(stats.totalDistance, 0)} km
                             </div>
+                            <div style={{ fontSize: '9px', opacity: 0.8, marginTop: 'var(--spacing-1)' }}>
+                                Avg: {formatNumber(stats.totalDistance / Math.max(projectFuelEntries.length, 1), 1)} km/trip
+                            </div>
                         </div>
-                        <i className="pi pi-map-marker" style={{ fontSize: '20px', color: '#f59e0b' }}></i>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <i className="pi pi-map-marker" style={{ fontSize: '18px' }}></i>
+                        </div>
                     </div>
                 </Card>
 
                 <Card style={{
-                    background: 'white',
-                    border: '1px solid var(--border-color)',
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    border: 'none',
                     borderRadius: 'var(--radius-md)',
-                    padding: 'var(--spacing-4)'
+                    padding: 'var(--spacing-4)',
+                    color: 'white'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-1)' }}>
+                            <div style={{ fontSize: 'var(--font-xs)', opacity: 0.9, marginBottom: 'var(--spacing-1)' }}>
                                 Total Litres
                             </div>
-                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700 }}>
                                 {formatNumber(stats.totalLitres, 1)} L
                             </div>
+                            <div style={{ fontSize: '9px', opacity: 0.8, marginTop: 'var(--spacing-1)' }}>
+                                Avg Mileage: {formatNumber(stats.totalDistance / Math.max(stats.totalLitres, 1), 2)} km/l
+                            </div>
                         </div>
-                        <i className="pi pi-bolt" style={{ fontSize: '20px', color: '#3b82f6' }}></i>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <i className="pi pi-bolt" style={{ fontSize: '18px' }}></i>
+                        </div>
                     </div>
                 </Card>
 
                 <Card style={{
-                    background: 'white',
-                    border: '1px solid var(--border-color)',
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    border: 'none',
                     borderRadius: 'var(--radius-md)',
-                    padding: 'var(--spacing-4)'
+                    padding: 'var(--spacing-4)',
+                    color: 'white'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-1)' }}>
+                            <div style={{ fontSize: 'var(--font-xs)', opacity: 0.9, marginBottom: 'var(--spacing-1)' }}>
                                 Active Vehicles
                             </div>
-                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700 }}>
                                 {stats.activeVehicles}
                             </div>
+                            <div style={{ fontSize: '9px', opacity: 0.8, marginTop: 'var(--spacing-1)' }}>
+                                of {projectVehicles.length} total vehicles
+                            </div>
                         </div>
-                        <i className="pi pi-car" style={{ fontSize: '20px', color: '#10b981' }}></i>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <i className="pi pi-car" style={{ fontSize: '18px' }}></i>
+                        </div>
                     </div>
                 </Card>
             </div>

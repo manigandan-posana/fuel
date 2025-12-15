@@ -303,18 +303,6 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                             className="vehicle-filter-dropdown"
                         />
                     </div>
-
-                    <div className="fuel-stats flex gap-4 text-sm font-medium" style={{
-                        marginLeft: 'auto',
-                        padding: '8px 16px',
-                        background: 'var(--bg-gradient-green)',
-                        borderRadius: 'var(--radius-lg)',
-                        color: 'white',
-                        boxShadow: 'var(--shadow-green)'
-                    }}>
-                        <span><i className="pi pi-database"></i> {filteredFuelEntries.length} entries</span>
-                        <span><i className="pi pi-map-marker"></i> {cumulativeDistance.toFixed(1)} km</span>
-                    </div>
                 </div>
             </Card>
 

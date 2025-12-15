@@ -16,6 +16,7 @@ interface VehicleManagementProps {
     fuelEntries?: FuelEntry[];
     onAddVehicle: (vehicle: Omit<Vehicle, "id">) => void;
     onDeleteVehicle: (id: string) => void;
+    onUpdateVehicle: (id: string, updates: Partial<Vehicle>) => void;
 }
 
 const VehicleManagement: React.FC<VehicleManagementProps> = ({
@@ -24,6 +25,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
     fuelEntries = [],
     onAddVehicle,
     onDeleteVehicle,
+    onUpdateVehicle,
 }) => {
     const [showDialog, setShowDialog] = useState(false);
     const [showFuelDialog, setShowFuelDialog] = useState(false);
@@ -167,13 +169,23 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     body={(rowData: Vehicle) => {
                         const isActive = rowData.status !== "Inactive";
                         return (
-                            <span className={`font-medium ${isActive ? 'text-green-600' : 'text-red-600'}`}>
-                                {isActive ? 'Active' : 'Inactive'}
-                            </span>
+                            <Button
+                                label={isActive ? 'Active' : 'Inactive'}
+                                icon={isActive ? 'pi pi-check-circle' : 'pi pi-times-circle'}
+                                severity={isActive ? 'success' : 'danger'}
+                                size="small"
+                                outlined
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateVehicle(rowData.id, { status: isActive ? 'Inactive' : 'Active' });
+                                    toast.success(`Vehicle ${isActive ? 'deactivated' : 'activated'}`);
+                                }}
+                                style={{ fontSize: 'var(--font-xs)', padding: 'var(--spacing-1) var(--spacing-2)' }}
+                            />
                         );
                     }}
                     sortable
-                    style={{ minWidth: '100px' }}
+                    style={{ minWidth: '120px' }}
                 />
                 <Column
                     header="Total Km"
@@ -196,16 +208,26 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     style={{ minWidth: '120px' }}
                 />
                 <Column
+                    header="Total Fuel Cost"
+                    body={(rowData: Vehicle) => {
+                        const vehicleEntries = fuelEntries.filter(e => e.vehicleId === rowData.id);
+                        const totalCost = vehicleEntries.reduce((sum, e) => sum + (e.totalCost || 0), 0);
+                        return <span className="font-medium text-green-600">₹{totalCost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>;
+                    }}
+                    sortable
+                    style={{ minWidth: '130px' }}
+                />
+                <Column
                     header="Avg Mileage"
                     body={(rowData: Vehicle) => {
                         const vehicleEntries = fuelEntries.filter(e => e.vehicleId === rowData.id && e.status === 'closed');
                         const totalKm = vehicleEntries.reduce((sum, e) => sum + (e.distance || 0), 0);
                         const totalLitres = fuelEntries.filter(e => e.vehicleId === rowData.id).reduce((sum, e) => sum + (e.litres || 0), 0);
                         const avgMileage = totalLitres > 0 ? totalKm / totalLitres : 0;
-                        return <span className="font-medium text-green-600">{avgMileage.toFixed(2)} km/l</span>;
+                        return <span className="font-medium text-700">{avgMileage.toFixed(2)} km/l</span>;
                     }}
                     sortable
-                    style={{ minWidth: '130px' }}
+                    style={{ minWidth: '120px' }}
                 />
                 <Column
                     body={vehicleActionsTemplate}
