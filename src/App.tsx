@@ -8,7 +8,6 @@ import VehicleManagement from "./pages/VehicleManagement";
 import VehicleDetails from "./pages/VehicleDetails";
 import FuelManagement from "./pages/FuelManagement";
 import DailyLog from "./pages/DailyLog";
-import History from "./pages/History";
 import SupplierManagement from "./pages/SupplierManagement";
 import type { Vehicle, FuelEntry, Supplier, ProjectId, DailyLogEntry } from "./types";
 
@@ -204,15 +203,6 @@ const App: React.FC = () => {
             onCloseDailyLog={handleCloseDailyLog}
           />
         );
-      case "history":
-        return (
-          <History
-            selectedProject={selectedProject}
-            vehicles={vehicles}
-            fuelEntries={fuelEntries}
-            dailyLogs={dailyLogs}
-          />
-        );
       default:
         return (
           <Dashboard
@@ -231,7 +221,6 @@ const App: React.FC = () => {
       case "fuel": return "Fuel Management";
       case "suppliers": return "Fuel Suppliers";
       case "today": return "Daily Log Sheet";
-      case "history": return "History";
       default: return "Dashboard";
     }
   };

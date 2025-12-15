@@ -41,6 +41,12 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
 }) => {
     const [activeFuelType, setActiveFuelType] = useState<FuelType>("Petrol");
     const [selectedVehicleFilter, setSelectedVehicleFilter] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [dateFrom, setDateFrom] = useState<Date | null>(null);
+    const [dateTo, setDateTo] = useState<Date | null>(null);
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
+
     const [newEntry, setNewEntry] = useState<NewEntryRow>({
         date: new Date(),
         vehicleId: "",
@@ -49,6 +55,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         openingKm: "",
         pricePerLitre: "",
     });
+
     const [showClosingDialog, setShowClosingDialog] = useState(false);
     const [closingEntry, setClosingEntry] = useState<FuelEntry | null>(null);
     const [closingKm, setClosingKm] = useState<string>("");
@@ -60,7 +67,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
     );
 
     const activeVehicles = useMemo(
-        () => projectVehicles.filter(v => v.status === "Active" || !v.status),
+        () => projectVehicles.filter((v) => v.status === "Active" || !v.status),
         [projectVehicles]
     );
 
@@ -69,19 +76,58 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         [activeVehicles, activeFuelType]
     );
 
-
     const filteredFuelEntries = useMemo(() => {
         let filtered = fuelEntries.filter(
             (e) => e.projectId === selectedProject && e.fuelType === activeFuelType
         );
+
         if (selectedVehicleFilter) {
             filtered = filtered.filter((e) => e.vehicleId === selectedVehicleFilter);
         }
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(
+                (e) =>
+                    e.vehicleName.toLowerCase().includes(query) ||
+                    e.supplierName.toLowerCase().includes(query)
+            );
+        }
+
+        if (dateFrom) {
+            const fromDate = new Date(dateFrom);
+            fromDate.setHours(0, 0, 0, 0);
+            filtered = filtered.filter((e) => e.date >= fromDate);
+        }
+        if (dateTo) {
+            const toDate = new Date(dateTo);
+            toDate.setHours(23, 59, 59, 999);
+            filtered = filtered.filter((e) => e.date <= toDate);
+        }
+
+        if (statusFilter) {
+            filtered = filtered.filter((e) => e.status === statusFilter);
+        }
+
+        if (supplierFilter) {
+            filtered = filtered.filter((e) => e.supplierId === supplierFilter);
+        }
+
         return filtered.slice().sort((a, b) => b.date.getTime() - a.date.getTime());
-    }, [fuelEntries, selectedProject, activeFuelType, selectedVehicleFilter]);
+    }, [
+        fuelEntries,
+        selectedProject,
+        activeFuelType,
+        selectedVehicleFilter,
+        searchQuery,
+        dateFrom,
+        dateTo,
+        statusFilter,
+        supplierFilter,
+    ]);
 
     const cumulativeDistance = useMemo(
-        () => filteredFuelEntries.filter(e => e.status === "closed").reduce((sum, e) => sum + e.distance, 0),
+        () => filteredFuelEntries.filter((e) => e.status === "closed").reduce((sum, e) => sum + e.distance, 0),
         [filteredFuelEntries]
     );
 
@@ -152,12 +198,13 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             openingKm: "",
             pricePerLitre: "",
         });
+
         toast.success("⛽ Fuel entry added! Click 'Closing' to complete.");
     };
 
     const handleOpenClosingDialog = (entry: FuelEntry) => {
         setClosingEntry(entry);
-        setClosingKm(""); // Leave blank for user to fill
+        setClosingKm("");
         setClosingKmPhoto("");
         setShowClosingDialog(true);
     };
@@ -180,7 +227,6 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         const distance = closingKmValue - closingEntry.openingKm;
         const mileage = distance / closingEntry.litres;
 
-        // Delete the old entry and add updated one
         onDeleteFuelEntry(closingEntry.id);
         onAddFuelEntry({
             date: closingEntry.date,
@@ -209,13 +255,11 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
 
     const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setClosingKmPhoto(file.name);
-        }
+        if (file) setClosingKmPhoto(file.name);
     };
 
     const dateTemplate = (rowData: FuelEntry) => (
-        <span style={{ fontWeight: 500 }}>{rowData.date.toLocaleDateString()}</span>
+        <span className="fm-td-strong">{rowData.date.toLocaleDateString()}</span>
     );
 
     const numberTemplate = (value: number, decimals = 2) => value.toFixed(decimals);
@@ -231,197 +275,279 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                     onClick={() => handleOpenClosingDialog(rowData)}
                     tooltip="Mark as Closed"
                     tooltipOptions={{ position: "left" }}
-                    className="w-2rem h-2rem p-0"
+                    className="fm-icon-btn"
                 />
             );
         }
-        return (
-            <i className="pi pi-check-circle text-green-500" style={{ fontSize: '1.2rem' }}></i>
-        );
+        return <i className="pi pi-check-circle text-green-500" style={{ fontSize: "1.1rem" }} />;
     };
 
+    const anyFilterActive =
+        !!searchQuery ||
+        !!selectedVehicleFilter ||
+        !!supplierFilter ||
+        !!statusFilter ||
+        !!dateFrom ||
+        !!dateTo;
 
+    const projectSuppliers = suppliers.filter((s) => s.projectId === selectedProject);
 
     return (
-        <div className="page-container">
-            <Card className="fuel-filters" style={{
-                background: 'linear-gradient(135deg, var(--primary-50) 0%, white 100%)',
-                border: '1px solid var(--primary-200)'
-            }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "center" }}>
-                    <div className="fuel-type-buttons">
-                        <Button
-                            label="Petrol"
-                            icon="pi pi-bolt"
-                            severity={activeFuelType === "Petrol" ? "success" : "secondary"}
+        <div className="fm-page">
+            {/* Top Bar (Title + Fuel Type segmented switch + summary) */}
+            <div className="fm-topbar">
+                <div className="fm-topbar-left">
+                    <div className="fm-title">
+                        <div className="fm-title-main">Fuel Management</div>
+                        <div className="fm-title-sub">
+                            Project: <span className="fm-mono">{String(selectedProject)}</span>
+                        </div>
+                    </div>
+
+                    <div className="fm-seg">
+                        <button
+                            className={`fm-seg-btn ${activeFuelType === "Petrol" ? "active" : ""}`}
                             onClick={() => {
                                 setActiveFuelType("Petrol");
                                 setSelectedVehicleFilter(null);
                             }}
-                            className="fuel-type-btn"
-                        />
-                        <Button
-                            label="Diesel"
-                            icon="pi pi-cog"
-                            severity={activeFuelType === "Diesel" ? "success" : "secondary"}
+                            type="button"
+                        >
+                            <i className="pi pi-bolt" />
+                            Petrol
+                        </button>
+                        <button
+                            className={`fm-seg-btn ${activeFuelType === "Diesel" ? "active" : ""}`}
                             onClick={() => {
                                 setActiveFuelType("Diesel");
                                 setSelectedVehicleFilter(null);
                             }}
-                            className="fuel-type-btn"
-                        />
-                        <Button
-                            label="Electric"
-                            icon="pi pi-flash"
-                            severity={activeFuelType === "Electric" ? "success" : "secondary"}
+                            type="button"
+                        >
+                            <i className="pi pi-cog" />
+                            Diesel
+                        </button>
+                        <button
+                            className={`fm-seg-btn ${activeFuelType === "Electric" ? "active" : ""}`}
                             onClick={() => {
                                 setActiveFuelType("Electric");
                                 setSelectedVehicleFilter(null);
                             }}
-                            className="fuel-type-btn"
-                        />
+                            type="button"
+                        >
+                            <i className="pi pi-flash" />
+                            Electric
+                        </button>
                     </div>
+                </div>
 
-                    <div className="vehicle-filter">
-                        <label>
-                            <i className="pi pi-filter"></i>
-                            Filter by Vehicle:
-                        </label>
-                        <Dropdown
-                            value={selectedVehicleFilter}
-                            options={[
-                                { label: "All Vehicles", value: null },
-                                ...fuelTypeVehicles.map((v) => ({
-                                    label: v.vehicleName,
-                                    value: v.id,
-                                })),
-                            ]}
-                            onChange={(e) => setSelectedVehicleFilter(e.value)}
-                            placeholder="Select a vehicle"
-                            className="vehicle-filter-dropdown"
-                        />
+                <div className="fm-summary">
+                    <div className="fm-chip">
+                        <div className="k">Showing</div>
+                        <div className="v">{filteredFuelEntries.length}</div>
                     </div>
+                    <div className="fm-chip">
+                        <div className="k">Fuel Type</div>
+                        <div className="v">{activeFuelType}</div>
+                    </div>
+                    {selectedVehicleFilter && (
+                        <div className="fm-chip good">
+                            <div className="k">Cumulative (Closed)</div>
+                            <div className="v">{cumulativeDistance.toFixed(2)} km</div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Filters (single line / compact) */}
+            <Card className="fm-card fm-filters-card">
+                <div className="fm-filters-row">
+                    <span className="p-input-icon-left fm-ctl fm-ctl-search">
+                        <i className="pi pi-search" />
+                        <InputText
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search vehicle / supplier"
+                            className="p-inputtext-sm fm-input"
+                        />
+                    </span>
+
+                    <Dropdown
+                        value={selectedVehicleFilter}
+                        options={[
+                            { label: "All Vehicles", value: null },
+                            ...fuelTypeVehicles.map((v) => ({ label: v.vehicleName, value: v.id })),
+                        ]}
+                        onChange={(e) => setSelectedVehicleFilter(e.value)}
+                        placeholder="Vehicle"
+                        showClear
+                        className="p-inputtext-sm fm-dd fm-ctl"
+                    />
+
+                    <Dropdown
+                        value={supplierFilter}
+                        options={[
+                            { label: "All Suppliers", value: null },
+                            ...projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id })),
+                        ]}
+                        onChange={(e) => setSupplierFilter(e.value)}
+                        placeholder="Supplier"
+                        showClear
+                        className="p-inputtext-sm fm-dd fm-ctl"
+                    />
+
+                    <Dropdown
+                        value={statusFilter}
+                        options={[
+                            { label: "All Status", value: null },
+                            { label: "Open", value: "open" },
+                            { label: "Closed", value: "closed" },
+                        ]}
+                        onChange={(e) => setStatusFilter(e.value)}
+                        placeholder="Status"
+                        showClear
+                        className="p-inputtext-sm fm-dd fm-ctl"
+                    />
+
+                    <Calendar
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.value as Date)}
+                        placeholder="From"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                        className="p-inputtext-sm fm-cal fm-ctl"
+                    />
+
+                    <Calendar
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.value as Date)}
+                        placeholder="To"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        showButtonBar
+                        className="p-inputtext-sm fm-cal fm-ctl"
+                    />
+
+                    <Button
+                        label="Clear"
+                        icon="pi pi-filter-slash"
+                        size="small"
+                        outlined
+                        onClick={() => {
+                            setSearchQuery("");
+                            setSelectedVehicleFilter(null);
+                            setSupplierFilter(null);
+                            setStatusFilter(null);
+                            setDateFrom(null);
+                            setDateTo(null);
+                        }}
+                        disabled={!anyFilterActive}
+                        className="fm-ctl fm-clear"
+                    />
                 </div>
             </Card>
 
+            {/* Optional message (kept, but compact) */}
             {selectedVehicleFilter && (
-                <Message
-                    severity="success"
-                    text={`Cumulative Distance for selected vehicle: ${cumulativeDistance.toFixed(2)} km`}
-                    icon="pi pi-chart-bar"
-                />
+                <div className="fm-msg">
+                    <Message
+                        severity="success"
+                        text={`Cumulative Distance for selected vehicle: ${cumulativeDistance.toFixed(2)} km`}
+                        icon="pi pi-chart-bar"
+                    />
+                </div>
             )}
 
-            {/* Add Entry Form - Fixed Box */}
-            <div className="fuel-add-form-container" style={{
-                background: 'linear-gradient(135deg, var(--primary-50) 0%, white 100%)',
-                border: '1px solid var(--primary-200)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'var(--spacing-4)',
-                boxShadow: 'var(--shadow-sm)',
-                marginBottom: 'var(--spacing-4)'
-            }}>
-                <h3 style={{
-                    margin: '0 0 var(--spacing-3) 0',
-                    fontSize: 'var(--font-base)',
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--spacing-2)'
-                }}>
-                    <i className="pi pi-plus-circle" style={{ color: 'var(--primary-500)', fontSize: 'var(--font-lg)' }}></i>
-                    Add New Entry
-                </h3>
-                <div className="table-entry-form" style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 'var(--spacing-2)',
-                    alignItems: 'flex-end'
-                }}>
-                    <FloatLabel style={{ minWidth: '140px' }}>
+            {/* Quick Add Entry (compact) */}
+            <Card className="fm-card fm-add-card">
+                <div className="fm-add-head">
+                    <div className="fm-add-title">
+                        <i className="pi pi-plus-circle" />
+                        <span>Add New Entry</span>
+                    </div>
+                    <div className="fm-add-hint">Quick add (then close later)</div>
+                </div>
+
+                <div className="fm-add-row">
+                    <FloatLabel className="fm-fl">
                         <Calendar
                             id="entryDate"
                             value={newEntry.date}
-                            onChange={(e) => setNewEntry(prev => ({ ...prev, date: (e.value as Date) || new Date() }))}
+                            onChange={(e) => setNewEntry((prev) => ({ ...prev, date: (e.value as Date) || new Date() }))}
                             dateFormat="dd/mm/yy"
                             showIcon
                             iconPos="left"
-                            className="p-inputtext-sm"
-                            style={{ width: '140px' }}
+                            className="p-inputtext-sm fm-cal"
                         />
                         <label htmlFor="entryDate">Date</label>
                     </FloatLabel>
 
-                    <FloatLabel style={{ minWidth: '180px', flex: '1' }}>
+                    <FloatLabel className="fm-fl fm-grow">
                         <Dropdown
                             id="entryVehicle"
                             value={newEntry.vehicleId}
-                            options={fuelTypeVehicles.map(v => ({ label: `${v.vehicleName} (${v.vehicleNumber})`, value: v.id }))}
-                            onChange={(e) => setNewEntry(prev => ({ ...prev, vehicleId: e.value }))}
-                            className="compact-dd"
+                            options={fuelTypeVehicles.map((v) => ({
+                                label: `${v.vehicleName} (${v.vehicleNumber})`,
+                                value: v.id,
+                            }))}
+                            onChange={(e) => setNewEntry((prev) => ({ ...prev, vehicleId: e.value }))}
+                            className="p-inputtext-sm fm-dd"
                         />
                         <label htmlFor="entryVehicle">Vehicle</label>
                     </FloatLabel>
 
-                    <FloatLabel style={{ minWidth: '150px', flex: '1' }}>
+                    <FloatLabel className="fm-fl fm-grow">
                         <Dropdown
                             id="entrySupplier"
                             value={newEntry.supplierId}
-                            options={suppliers.filter(s => s.projectId === selectedProject).map(s => ({ label: s.supplierName, value: s.id }))}
-                            onChange={(e) => setNewEntry(prev => ({ ...prev, supplierId: e.value }))}
-                            className="compact-dd"
+                            options={projectSuppliers.map((s) => ({ label: s.supplierName, value: s.id }))}
+                            onChange={(e) => setNewEntry((prev) => ({ ...prev, supplierId: e.value }))}
+                            className="p-inputtext-sm fm-dd"
                         />
                         <label htmlFor="entrySupplier">Supplier</label>
                     </FloatLabel>
 
-                    <FloatLabel style={{ minWidth: '100px' }}>
+                    <FloatLabel className="fm-fl fm-narrow">
                         <InputText
                             id="entryLitres"
                             value={newEntry.litres}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                    setNewEntry(prev => ({ ...prev, litres: value }));
-                                }
+                                if (value === "" || /^\d*\.?\d*$/.test(value)) setNewEntry((prev) => ({ ...prev, litres: value }));
                             }}
-                            className="p-inputtext-sm"
+                            className="p-inputtext-sm fm-input"
                             keyfilter="num"
-                            style={{ width: '100px' }}
                         />
                         <label htmlFor="entryLitres">Litres</label>
                     </FloatLabel>
 
-                    <FloatLabel style={{ minWidth: '110px' }}>
+                    <FloatLabel className="fm-fl fm-narrow">
                         <InputText
                             id="entryPrice"
                             value={newEntry.pricePerLitre}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                    setNewEntry(prev => ({ ...prev, pricePerLitre: value }));
-                                }
+                                if (value === "" || /^\d*\.?\d*$/.test(value))
+                                    setNewEntry((prev) => ({ ...prev, pricePerLitre: value }));
                             }}
-                            className="p-inputtext-sm"
+                            className="p-inputtext-sm fm-input"
                             keyfilter="num"
-                            style={{ width: '110px' }}
                         />
                         <label htmlFor="entryPrice">Price / L</label>
                     </FloatLabel>
 
-                    <FloatLabel style={{ minWidth: '120px' }}>
+                    <FloatLabel className="fm-fl fm-narrow">
                         <InputText
                             id="entryOpeningKm"
                             value={newEntry.openingKm}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                    setNewEntry(prev => ({ ...prev, openingKm: value }));
-                                }
+                                if (value === "" || /^\d*\.?\d*$/.test(value))
+                                    setNewEntry((prev) => ({ ...prev, openingKm: value }));
                             }}
-                            className="p-inputtext-sm"
+                            className="p-inputtext-sm fm-input"
                             keyfilter="num"
-                            style={{ width: '120px' }}
                         />
                         <label htmlFor="entryOpeningKm">Opening Km</label>
                     </FloatLabel>
@@ -432,136 +558,117 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                         onClick={handleAddNewEntry}
                         severity="success"
                         size="small"
-                        style={{ height: '36px' }}
+                        className="fm-add-btn"
                     />
                 </div>
-            </div>
+            </Card>
 
-            <DataTable
-                value={filteredFuelEntries}
-                paginator
-                rows={20}
-                dataKey="id"
-                emptyMessage={`No ${activeFuelType} fuel entries found`}
-                className="custom-datatable p-datatable-sm text-sm"
-                stripedRows
-                responsiveLayout="scroll"
-                size="small"
-            >
-                <Column field="date" header="Date" body={dateTemplate} sortable style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} />
-                <Column
-                    field="vehicleName"
-                    header="Vehicle"
-                    sortable
-                    body={(rowData: FuelEntry) => (
-                        <span className="font-medium">{rowData.vehicleName}</span>
-                    )}
-                    style={{ padding: '0.5rem' }}
-                />
-                <Column
-                    field="supplierName"
-                    header="Supplier"
-                    sortable
-                    body={(rowData: FuelEntry) => <span className="text-700">{rowData.supplierName}</span>}
-                    style={{ padding: '0.35rem 0.25rem' }}
-                />
+            {/* Table */}
+            <Card className="fm-card fm-table-card">
+                <DataTable
+                    value={filteredFuelEntries}
+                    paginator
+                    rows={20}
+                    dataKey="id"
+                    emptyMessage={`No ${activeFuelType} fuel entries found`}
+                    className="p-datatable-sm fm-table"
+                    stripedRows
+                    responsiveLayout="scroll"
+                    size="small"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                    rowsPerPageOptions={[20, 50, 100]}
+                >
+                    <Column field="date" header="Date" body={dateTemplate} sortable style={{ minWidth: "110px" }} />
+                    <Column
+                        field="vehicleName"
+                        header="Vehicle"
+                        sortable
+                        body={(rowData: FuelEntry) => <span className="fm-td-strong">{rowData.vehicleName}</span>}
+                        style={{ minWidth: "160px" }}
+                    />
+                    <Column
+                        field="supplierName"
+                        header="Supplier"
+                        sortable
+                        body={(rowData: FuelEntry) => <span className="fm-td-muted">{rowData.supplierName}</span>}
+                        style={{ minWidth: "160px" }}
+                    />
+                    <Column
+                        field="pricePerLitre"
+                        header="Price/L"
+                        body={(rowData: FuelEntry) =>
+                            rowData.pricePerLitre ? `₹${numberTemplate(rowData.pricePerLitre, 2)}` : "—"
+                        }
+                        sortable
+                        style={{ minWidth: "95px" }}
+                    />
+                    <Column
+                        field="litres"
+                        header="Litres"
+                        body={(rowData: FuelEntry) => `${numberTemplate(rowData.litres, 2)} L`}
+                        sortable
+                        style={{ minWidth: "95px" }}
+                    />
+                    <Column
+                        field="openingKm"
+                        header="Op. Km"
+                        body={(rowData: FuelEntry) => numberTemplate(rowData.openingKm, 1)}
+                        sortable
+                        style={{ minWidth: "95px" }}
+                    />
+                    <Column
+                        field="closingKm"
+                        header="Cl. Km"
+                        body={(rowData: FuelEntry) => (rowData.status === "closed" ? numberTemplate(rowData.closingKm, 1) : "—")}
+                        sortable
+                        style={{ minWidth: "95px" }}
+                    />
+                    <Column
+                        field="distance"
+                        header="Dist."
+                        body={(rowData: FuelEntry) => (rowData.status === "closed" ? `${numberTemplate(rowData.distance, 1)} km` : "—")}
+                        sortable
+                        style={{ minWidth: "105px" }}
+                    />
+                    <Column
+                        field="mileage"
+                        header="Mileage"
+                        body={(rowData: FuelEntry) => (rowData.status === "closed" ? numberTemplate(rowData.mileage, 2) : "—")}
+                        sortable
+                        style={{ minWidth: "105px" }}
+                    />
+                    <Column header="Status" body={statusTemplate} style={{ width: "70px", textAlign: "center" }} />
+                </DataTable>
+            </Card>
 
-                <Column
-                    field="pricePerLitre"
-                    header="Price/L"
-                    body={(rowData: FuelEntry) => <span style={{ fontSize: '0.75rem' }}>{rowData.pricePerLitre ? '₹' + numberTemplate(rowData.pricePerLitre, 2) : '-'}</span>}
-                    sortable
-                    style={{ padding: '0.25rem 0.5rem' }}
-                />
-                <Column
-                    field="litres"
-                    header="Litres"
-                    body={(rowData: FuelEntry) => <span style={{ fontSize: '0.75rem' }}>{numberTemplate(rowData.litres, 2) + ' L'}</span>}
-                    sortable
-                    style={{ padding: '0.25rem 0.5rem' }}
-                />
-                <Column
-                    field="openingKm"
-                    header="Op. Km"
-                    body={(rowData: FuelEntry) => <span style={{ fontSize: '0.75rem' }}>{numberTemplate(rowData.openingKm, 1)}</span>}
-                    sortable
-                    style={{ padding: '0.25rem 0.5rem' }}
-                />
-                <Column
-                    field="closingKm"
-                    header="Cl. Km"
-                    body={(rowData: FuelEntry) => <span style={{ fontSize: '0.75rem' }}>{rowData.status === "closed" ? numberTemplate(rowData.closingKm, 1) : "—"}</span>}
-                    sortable
-                    style={{ padding: '0.25rem 0.5rem' }}
-                />
-                <Column
-                    field="distance"
-                    header="Dist."
-                    body={(rowData: FuelEntry) => <span style={{ fontSize: '0.75rem' }}>{rowData.status === "closed" ? numberTemplate(rowData.distance, 1) + ' km' : "—"}</span>}
-                    sortable
-                    style={{ padding: '0.25rem 0.5rem' }}
-                />
-                <Column
-                    field="mileage"
-                    header="Mileage"
-                    body={(rowData: FuelEntry) => <span style={{ fontSize: '0.75rem' }}>{rowData.status === "closed" ? numberTemplate(rowData.mileage, 2) : "—"}</span>}
-                    sortable
-                    style={{ padding: '0.25rem 0.5rem' }}
-                />
-                <Column header="Status" body={statusTemplate} style={{ width: "50px", textAlign: "center", padding: '0.35rem 0.25rem' }} />
-
-            </DataTable>
-
+            {/* Close Dialog */}
             <Dialog
                 header={
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <i className="pi pi-check-circle" style={{ color: "var(--primary-green)" }}></i>
+                    <div className="fm-dialog-title">
+                        <i className="pi pi-check-circle" />
                         <span>Close Fuel Entry</span>
                     </div>
                 }
                 visible={showClosingDialog}
-                style={{ width: "500px" }}
+                style={{ width: "520px", maxWidth: "92vw" }}
                 onHide={() => setShowClosingDialog(false)}
                 footer={
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '10px' }}>
-                        <Button
-                            label="Cancel"
-                            icon="pi pi-times"
-                            onClick={() => setShowClosingDialog(false)}
-                            severity="danger"
-                            raised
-                        />
-                        <Button
-                            label="Save"
-                            icon="pi pi-check"
-                            onClick={handleSaveClosing}
-                            severity="success"
-                            raised
-                            autoFocus
-                        />
+                    <div className="fm-dialog-footer">
+                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowClosingDialog(false)} severity="secondary" outlined />
+                        <Button label="Save" icon="pi pi-check" onClick={handleSaveClosing} severity="success" />
                     </div>
                 }
             >
                 {closingEntry && (
-                    <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)' }}>
-                        <div style={{
-                            background: 'var(--bg-secondary)',
-                            padding: 'var(--spacing-4)',
-                            borderRadius: 'var(--radius-lg)',
-                            border: '1px solid var(--border-color)'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-3)' }}>
-                                <i className="pi pi-car" style={{ color: 'var(--primary-500)', fontSize: 'var(--font-lg)' }}></i>
-                                <span style={{ fontWeight: 600, fontSize: 'var(--font-base)' }}>{closingEntry.vehicleName}</span>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-3)', fontSize: 'var(--font-sm)' }}>
+                    <div className="fm-dialog-body">
+                        <div className="fm-dialog-info">
+                            <div className="fm-dialog-veh">
+                                <i className="pi pi-car" />
                                 <div>
-                                    <span style={{ color: 'var(--text-secondary)' }}>Opening Km:</span>
-                                    <span style={{ fontWeight: 600, marginLeft: 'var(--spacing-2)' }}>{closingEntry.openingKm.toFixed(1)} km</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-secondary)' }}>Litres:</span>
-                                    <span style={{ fontWeight: 600, marginLeft: 'var(--spacing-2)' }}>{closingEntry.litres.toFixed(2)} L</span>
+                                    <div className="fm-dialog-veh-name">{closingEntry.vehicleName}</div>
+                                    <div className="fm-dialog-veh-sub">
+                                        Opening: <b>{closingEntry.openingKm.toFixed(1)}</b> km • Litres: <b>{closingEntry.litres.toFixed(2)}</b> L
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -572,9 +679,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                                 value={closingKm}
                                 onChange={(e) => {
                                     const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setClosingKm(value);
-                                    }
+                                    if (value === "" || /^\d*\.?\d*$/.test(value)) setClosingKm(value);
                                 }}
                                 className="w-full"
                                 keyfilter="num"
@@ -582,63 +687,170 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                             <label htmlFor="closingKm">Closing Km *</label>
                         </FloatLabel>
 
-                        <div>
-                            <label style={{
-                                display: 'block',
-                                marginBottom: 'var(--spacing-2)',
-                                fontSize: 'var(--font-sm)',
-                                color: 'var(--text-secondary)',
-                                fontWeight: 500
-                            }}>
-                                Closing Km Photo (Optional)
-                            </label>
-                            <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center' }}>
+                        <div className="fm-upload">
+                            <div className="fm-upload-label">Closing Km Photo (Optional)</div>
+                            <div className="fm-upload-row">
                                 <Button
                                     label={closingKmPhoto ? "Change Photo" : "Upload Photo"}
                                     icon="pi pi-upload"
                                     severity="secondary"
                                     outlined
                                     size="small"
-                                    onClick={() => document.getElementById('closingPhotoInput')?.click()}
-                                    style={{ flex: 1 }}
+                                    onClick={() => document.getElementById("closingPhotoInput")?.click()}
+                                    className="fm-upload-btn"
                                 />
                                 <input
                                     id="closingPhotoInput"
                                     type="file"
                                     accept="image/*"
                                     onChange={handleFileUpload}
-                                    style={{ display: 'none' }}
+                                    style={{ display: "none" }}
                                 />
-                                {closingKmPhoto && <i className="pi pi-check" style={{ fontSize: 'var(--font-xl)', color: 'var(--primary-500)' }}></i>}
+                                {closingKmPhoto && <span className="fm-file-ok"><i className="pi pi-check" /> {closingKmPhoto}</span>}
                             </div>
                         </div>
 
                         {closingKm && parseFloat(closingKm) > closingEntry.openingKm && (
-                            <div style={{
-                                background: 'var(--primary-50)',
-                                padding: 'var(--spacing-4)',
-                                borderRadius: 'var(--radius-lg)',
-                                border: '1px solid var(--primary-200)'
-                            }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-3)', fontSize: 'var(--font-sm)' }}>
-                                    <div>
-                                        <span style={{ color: 'var(--text-secondary)' }}>Distance:</span>
-                                        <span style={{ fontWeight: 600, marginLeft: 'var(--spacing-2)', color: 'var(--primary-600)' }}>
-                                            {(parseFloat(closingKm) - closingEntry.openingKm).toFixed(1)} km
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span style={{ color: 'var(--text-secondary)' }}>Mileage:</span>
-                                        <span style={{ fontWeight: 600, marginLeft: 'var(--spacing-2)', color: 'var(--primary-600)' }}>
-                                            {((parseFloat(closingKm) - closingEntry.openingKm) / closingEntry.litres).toFixed(2)} km/l
-                                        </span>
-                                    </div>
+                            <div className="fm-preview">
+                                <div className="fm-preview-item">
+                                    <div className="k">Distance</div>
+                                    <div className="v">{(parseFloat(closingKm) - closingEntry.openingKm).toFixed(1)} km</div>
+                                </div>
+                                <div className="fm-preview-item">
+                                    <div className="k">Mileage</div>
+                                    <div className="v">{((parseFloat(closingKm) - closingEntry.openingKm) / closingEntry.litres).toFixed(2)} km/l</div>
                                 </div>
                             </div>
                         )}
                     </div>
                 )}
             </Dialog>
+
+            {/* Scoped compact styles */}
+            <style>{`
+        .fm-page{display:flex;flex-direction:column;gap:10px}
+        .fm-card{border-radius:12px}
+        .fm-mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+        /* Topbar */
+        .fm-topbar{
+          display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+          padding:10px;border-radius:12px;
+          background: linear-gradient(135deg, var(--primary-50) 0%, var(--surface-0) 60%);
+          border: 1px solid var(--surface-200);
+        }
+        .fm-topbar-left{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+        .fm-title-main{font-weight:900;font-size:14px;line-height:1.1}
+        .fm-title-sub{font-size:11px;color:var(--text-color-secondary);margin-top:2px}
+        .fm-summary{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+        .fm-chip{
+          border:1px solid var(--surface-200);background:var(--surface-0);
+          border-radius:999px;padding:6px 10px;min-width:120px;
+        }
+        .fm-chip .k{font-size:10px;color:var(--text-color-secondary);line-height:1}
+        .fm-chip .v{font-size:12px;font-weight:900;margin-top:2px;line-height:1.1}
+        .fm-chip.good{border-color: rgba(16,185,129,.35)}
+
+        /* Segmented fuel type */
+        .fm-seg{
+          display:flex;gap:6px;padding:6px;border-radius:999px;
+          background: var(--surface-0);
+          border:1px solid var(--surface-200);
+        }
+        .fm-seg-btn{
+          border:1px solid transparent;background:transparent;
+          border-radius:999px;padding:6px 10px;
+          font-size:12px;font-weight:900;cursor:pointer;
+          display:flex;align-items:center;gap:6px;
+          color: var(--text-color);
+        }
+        .fm-seg-btn i{font-size:12px;opacity:.9}
+        .fm-seg-btn.active{
+          background: var(--primary-color);
+          color: var(--primary-color-text);
+          box-shadow: 0 6px 16px rgba(0,0,0,.08);
+        }
+
+        /* Filters: single line */
+        .fm-filters-card{padding:8px}
+        .fm-filters-row{
+          display:flex;align-items:center;gap:8px;
+          overflow-x:auto;overflow-y:hidden;
+          padding-bottom:2px;
+          scrollbar-width: thin;
+        }
+        .fm-ctl{flex:0 0 auto}
+        .fm-ctl-search{min-width:240px}
+        .fm-dd{min-width:170px}
+        .fm-cal{min-width:150px}
+        .fm-clear{min-width:110px}
+        .fm-input{width:100%}
+        .fm-filters-row .p-dropdown,
+        .fm-filters-row .p-calendar,
+        .fm-filters-row .p-inputtext{height:36px}
+
+        /* Message */
+        .fm-msg .p-message{padding:6px 10px}
+        .fm-msg{margin-top:-4px}
+
+        /* Add */
+        .fm-add-card{padding:10px}
+        .fm-add-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .fm-add-title{display:flex;align-items:center;gap:8px;font-weight:900;font-size:12px}
+        .fm-add-title i{color:var(--primary-color)}
+        .fm-add-hint{font-size:11px;color:var(--text-color-secondary)}
+        .fm-add-row{
+          display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;
+        }
+        .fm-fl{min-width:150px}
+        .fm-grow{flex:1;min-width:220px}
+        .fm-narrow{min-width:140px}
+        .fm-add-btn{height:36px}
+        .fm-add-row .p-dropdown,
+        .fm-add-row .p-calendar,
+        .fm-add-row .p-inputtext{height:36px}
+
+        /* Table compact */
+        .fm-table-card{padding:0;overflow:hidden}
+        .fm-table .p-datatable-thead > tr > th{padding:8px 10px;font-size:12px;white-space:nowrap}
+        .fm-table .p-datatable-tbody > tr > td{padding:7px 10px;font-size:12px}
+        .fm-td-strong{font-weight:800}
+        .fm-td-muted{color:var(--text-color-secondary);font-weight:600}
+        .fm-icon-btn{width:2rem;height:2rem;padding:0}
+
+        /* Dialog */
+        .fm-dialog-title{display:flex;align-items:center;gap:8px;font-weight:900}
+        .fm-dialog-title i{color: var(--primary-color)}
+        .fm-dialog-footer{display:flex;justify-content:flex-end;gap:8px}
+        .fm-dialog-body{display:flex;flex-direction:column;gap:12px}
+        .fm-dialog-info{
+          border:1px solid var(--surface-200);
+          border-radius:12px;
+          background: var(--surface-50);
+          padding:10px;
+        }
+        .fm-dialog-veh{display:flex;gap:10px;align-items:flex-start}
+        .fm-dialog-veh i{font-size:18px;color:var(--primary-color);margin-top:2px}
+        .fm-dialog-veh-name{font-weight:900;font-size:13px}
+        .fm-dialog-veh-sub{font-size:11px;color:var(--text-color-secondary);margin-top:2px}
+        .fm-upload-label{font-size:11px;color:var(--text-color-secondary);font-weight:700;margin-bottom:6px}
+        .fm-upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .fm-file-ok{font-size:11px;font-weight:800;display:flex;align-items:center;gap:6px;color: var(--green-600)}
+        .fm-preview{
+          display:grid;grid-template-columns: 1fr 1fr;gap:10px;
+          padding:10px;border-radius:12px;
+          border:1px solid rgba(59,130,246,.25);
+          background: rgba(59,130,246,.06);
+        }
+        .fm-preview-item .k{font-size:10px;color:var(--text-color-secondary)}
+        .fm-preview-item .v{font-size:12px;font-weight:900;margin-top:2px}
+
+        @media (max-width: 900px){
+          .fm-topbar{flex-direction:column}
+          .fm-summary{justify-content:flex-start}
+          .fm-ctl-search{min-width:210px}
+        }
+      `}</style>
         </div>
     );
 };

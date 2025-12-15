@@ -11,7 +11,6 @@ const BottomTabs: React.FC<BottomTabsProps> = ({ activeMenu, onMenuChange }) => 
         { id: "vehicles", label: "Vehicles", icon: "pi-car" },
         { id: "fuel", label: "Fuel", icon: "pi-chart-line" },
         { id: "today", label: "Today", icon: "pi-calendar" },
-        { id: "history", label: "History", icon: "pi-history" },
     ];
 
     return (
