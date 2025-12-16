@@ -177,7 +177,7 @@ code {
 
 .vm-dialog-form .p-dropdown {
   width: 100% !important;
-  height: 40px !important;
+  height: 36px !important;
   display: flex !important;
   align-items: stretch;
   overflow: hidden;
@@ -211,7 +211,7 @@ code {
 
 .vm-dialog-form .p-inputtext,
 .vm-dialog-form .p-calendar .p-inputtext {
-  height: 40px !important;
+  height: 36px !important;
 }
 
 .vm-dialog-form .p-calendar {
@@ -225,6 +225,94 @@ code {
 }
 
 .vm-dialog-form .p-calendar .p-button {
-  width: 40px;
-  height: 40px !important;
+  width: 36px;
+  height: 36px !important;
+}
+
+/* =========================
+   HEADER PROJECT SELECTOR FIX
+   ========================= */
+.header-project-selector {
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.header-project-selector .p-float-label {
+  display: block;
+  width: 100%;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.header-project-selector .p-dropdown {
+  width: 100% !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: white;
+}
+
+.header-project-selector .p-dropdown .p-dropdown-label {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center;
+  padding: 0 0.65rem !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.header-project-selector .p-dropdown .p-dropdown-label.p-inputtext {
+  border: 0 !important;
+}
+
+.header-project-selector .p-dropdown .p-dropdown-trigger {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 0 !important;
+  width: 28px;
+}
+
+.header-project-selector .p-dropdown:hover {
+  border-color: var(--primary-400);
+}
+
+.header-project-selector .p-dropdown.p-focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+.header-project-selector .p-float-label>label {
+  font-size: 9px !important;
+  font-weight: 500;
+  left: 0.65rem;
+  color: var(--text-secondary);
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s;
+  pointer-events: none;
+  position: absolute;
+}
+
+.header-project-selector .p-float-label>.p-dropdown.p-inputwrapper-filled~label,
+.header-project-selector .p-float-label>.p-dropdown.p-focus~label,
+.header-project-selector .p-float-label>.p-dropdown~label {
+  top: -0.6rem !important;
+  transform: none !important;
+  font-size: 8.5px !important;
+  background: white;
+  padding: 0 4px;
+  font-weight: 500;
+  color: var(--primary-500);
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import { Dropdown } from "primereact/dropdown";
+import { FloatLabel } from "primereact/floatlabel";
 import type { ProjectId } from "../types";
 import { PROJECTS } from "../data/constants";
 
@@ -28,17 +29,21 @@ const Header: React.FC<HeaderProps> = ({ title, icon, selectedProject, onProject
                     </div>
                 </div>
                 <div className="header-project-selector">
-                    <i className="pi pi-briefcase"></i>
-                    <label>Project:</label>
-                    <Dropdown
-                        value={selectedProject}
-                        options={PROJECTS.map((p) => ({
-                            label: p,
-                            value: p,
-                        }))}
-                        onChange={(e) => onProjectChange(e.value)}
-                        className="project-dropdown"
-                    />
+                    <FloatLabel>
+                        <Dropdown
+                            inputId="project-selector"
+                            value={selectedProject}
+                            options={PROJECTS.map((p) => ({
+                                label: p,
+                                value: p,
+                            }))}
+                            optionLabel="label"
+                            optionValue="value"
+                            onChange={(e) => onProjectChange(e.value)}
+                            className="project-dropdown"
+                        />
+                        <label htmlFor="project-selector">Project</label>
+                    </FloatLabel>
                 </div>
             </div>
         </div>

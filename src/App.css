@@ -69,7 +69,7 @@
   /* Layout */
   --sidebar-width: 220px;
   --sidebar-collapsed: 60px;
-  --header-height: 44px;
+  --header-height: 56px;
   --bottom-tabs-height: 56px;
 
   /* Spacing System - Reduced for Compact Design */
@@ -218,7 +218,7 @@ body {
 }
 
 .sidebar-header h2 {
-  font-size: var(--font-xl);
+  font-size: var(--font-3xl);
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.5px;
@@ -473,12 +473,12 @@ body {
 }
 
 .header-title>i {
-  font-size: var(--font-lg);
+  font-size: var(--font-2xl);
   color: var(--primary-500);
 }
 
 .header-title h1 {
-  font-size: var(--font-lg);
+  font-size: var(--font-3xl);
   font-weight: 700;
   margin: 0;
   color: var(--text-primary);
@@ -490,47 +490,6 @@ body {
   font-size: var(--font-xs);
   color: var(--text-secondary);
   margin: 2px 0 0 0;
-}
-
-.header-project-selector {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  background: var(--bg-secondary);
-  padding: 2px 2px 2px var(--spacing-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  transition: var(--transition-base);
-  height: 38px;
-}
-
-.header-project-selector:hover {
-  border-color: var(--primary-500);
-  box-shadow: var(--shadow-sm);
-}
-
-.header-project-selector i {
-  color: var(--primary-500);
-  font-size: var(--font-base);
-}
-
-.header-project-selector label {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: var(--font-xs);
-}
-
-.project-dropdown {
-  min-width: 130px;
-}
-
-.project-dropdown .p-dropdown-label {
-  padding: 4px 8px !important;
-  font-size: var(--font-sm);
-}
-
-.project-dropdown .p-dropdown-trigger {
-  width: 2rem !important;
 }
 
 /* ===== PAGE CONTENT ===== */
