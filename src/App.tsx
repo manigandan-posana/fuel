@@ -225,6 +225,17 @@ const App: React.FC = () => {
     }
   };
 
+  const getPageIcon = (menu: string) => {
+    switch (menu) {
+      case "dashboard": return "pi-chart-bar";
+      case "vehicles": return "pi-car";
+      case "fuel": return "pi-chart-line";
+      case "suppliers": return "pi-building";
+      case "today": return "pi-calendar";
+      default: return "pi-chart-bar";
+    }
+  };
+
   return (
     <div className="app-container">
       <Toaster position="top-right" />
@@ -241,6 +252,7 @@ const App: React.FC = () => {
       <div className={`main-content ${sidebarCollapsed ? "collapsed" : ""}`}>
         <Header
           title={getPageTitle(activeMenu)}
+          icon={getPageIcon(activeMenu)}
           selectedProject={selectedProject}
           onProjectChange={handleProjectChange}
           onToggleSidebar={() => setMobileSidebarOpen((s) => !s)}

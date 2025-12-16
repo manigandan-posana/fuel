@@ -5,12 +5,13 @@ import { PROJECTS } from "../data/constants";
 
 interface HeaderProps {
     title: string;
+    icon: string;
     selectedProject: ProjectId;
     onProjectChange: (project: ProjectId) => void;
     onToggleSidebar?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, selectedProject, onProjectChange, onToggleSidebar }) => {
+const Header: React.FC<HeaderProps> = ({ title, icon, selectedProject, onProjectChange, onToggleSidebar }) => {
     return (
         <div className="app-header">
             <div className="header-content">
@@ -20,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({ title, selectedProject, onProjectChange
                     </button>
 
                     <div className="header-title">
-                        <i className="pi pi-car"></i>
+                        <i className={`pi ${icon}`}></i>
                         <div>
                             <h1>{title}</h1>
                         </div>
