@@ -641,6 +641,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
           className="p-datatable-sm fm-table"
           stripedRows
           size="small"
+          sortIcon={() => null}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
           rowsPerPageOptions={[20, 50, 100]}
         >
@@ -648,20 +649,17 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             field="date"
             header="Date"
             body={dateTemplate}
-            sortable
             style={{ width: "90px" }}
           />
           <Column
             field="vehicleName"
             header="Vehicle"
-            sortable
             body={(rowData: FuelEntry) => <span className="fm-td-strong">{rowData.vehicleName}</span>}
             style={{ width: "130px" }}
           />
           <Column
             field="supplierName"
             header="Supplier"
-            sortable
             body={(rowData: FuelEntry) => <span className="fm-td-muted">{rowData.supplierName}</span>}
             style={{ width: "120px" }}
           />
@@ -671,25 +669,19 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             body={(rowData: FuelEntry) =>
               rowData.pricePerLitre ? `₹${numberTemplate(rowData.pricePerLitre, 2)}` : "—"
             }
-            sortable
-            style={{ width: "80px", textAlign: "right" }}
-            headerStyle={{ textAlign: "right" }}
+            style={{ width: "80px" }}
           />
           <Column
             field="litres"
             header="Litres"
             body={(rowData: FuelEntry) => `${numberTemplate(rowData.litres, 2)} L`}
-            sortable
-            style={{ width: "75px", textAlign: "right" }}
-            headerStyle={{ textAlign: "right" }}
+            style={{ width: "75px" }}
           />
           <Column
             field="openingKm"
             header="Op. Km"
             body={(rowData: FuelEntry) => numberTemplate(rowData.openingKm, 1)}
-            sortable
-            style={{ width: "75px", textAlign: "right" }}
-            headerStyle={{ textAlign: "right" }}
+            style={{ width: "75px" }}
           />
           <Column
             field="closingKm"
@@ -697,9 +689,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             body={(rowData: FuelEntry) =>
               rowData.status === "closed" ? numberTemplate(rowData.closingKm, 1) : "—"
             }
-            sortable
-            style={{ width: "75px", textAlign: "right" }}
-            headerStyle={{ textAlign: "right" }}
+            style={{ width: "75px" }}
           />
           <Column
             field="distance"
@@ -707,23 +697,18 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             body={(rowData: FuelEntry) =>
               rowData.status === "closed" ? `${numberTemplate(rowData.distance, 1)} km` : "—"
             }
-            sortable
-            style={{ width: "80px", textAlign: "right" }}
-            headerStyle={{ textAlign: "right" }}
+            style={{ width: "80px" }}
           />
           <Column
             field="mileage"
             header="Mileage"
             body={(rowData: FuelEntry) => (rowData.status === "closed" ? numberTemplate(rowData.mileage, 2) : "—")}
-            sortable
-            style={{ width: "75px", textAlign: "right" }}
-            headerStyle={{ textAlign: "right" }}
+            style={{ width: "75px" }}
           />
           <Column
             header="Status"
             body={statusTemplate}
             style={{ width: "60px", textAlign: "center" }}
-            headerStyle={{ textAlign: "center" }}
           />
         </DataTable>
       </Card>
