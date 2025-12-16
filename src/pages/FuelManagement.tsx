@@ -39,7 +39,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
   onAddFuelEntry,
   onDeleteFuelEntry,
 }) => {
-  const [activeFuelType, setActiveFuelType] = useState<FuelType>("Petrol");
+  const [activeFuelType, setActiveFuelType] = useState<FuelType>("Diesel");
   const [viewMode, setViewMode] = useState<"current" | "history">("current");
 
   // Filter states (only for history view)
@@ -311,6 +311,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 onClick={() => {
                   setViewMode("current");
                   setSelectedVehicleFilter(null);
+                  setActiveFuelType("Diesel");
                 }}
               >
                 Current
@@ -321,6 +322,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 onClick={() => {
                   setViewMode("history");
                   setSelectedVehicleFilter(null);
+                  setActiveFuelType("Diesel");
                 }}
               >
                 History
@@ -333,17 +335,6 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             <div className="fm-tabs fm-fuel-tabs">
               <button
                 type="button"
-                className={`fm-tab ${activeFuelType === "Petrol" ? "active" : ""}`}
-                onClick={() => {
-                  setActiveFuelType("Petrol");
-                  setSelectedVehicleFilter(null);
-                }}
-              >
-                Petrol
-              </button>
-
-              <button
-                type="button"
                 className={`fm-tab ${activeFuelType === "Diesel" ? "active" : ""}`}
                 onClick={() => {
                   setActiveFuelType("Diesel");
@@ -351,6 +342,17 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 }}
               >
                 Diesel
+              </button>
+
+              <button
+                type="button"
+                className={`fm-tab ${activeFuelType === "Petrol" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveFuelType("Petrol");
+                  setSelectedVehicleFilter(null);
+                }}
+              >
+                Petrol
               </button>
 
               <button
