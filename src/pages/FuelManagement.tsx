@@ -423,7 +423,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             </FloatLabel>
 
             {/* Vehicle Filter - PrimeReact Dropdown */}
-            <FloatLabel className="fm-fi">
+            <FloatLabel className="fm-fi fm-fi-dropdown">
               <Dropdown
                 inputId="filter-vehicle"
                 value={selectedVehicleFilter}
@@ -440,7 +440,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
             </FloatLabel>
 
             {/* Supplier Filter - PrimeReact Dropdown */}
-            <FloatLabel className="fm-fi">
+            <FloatLabel className="fm-fi fm-fi-dropdown">
               <Dropdown
                 inputId="filter-supplier"
                 value={supplierFilter}
@@ -918,6 +918,11 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
           flex-wrap:wrap;
         }
         .fm-input{width:100%}
+        .fm-fi{flex:0 0 auto}
+        .fm-fi-search{min-width:280px;flex:1 1 280px}
+        .fm-fi-dropdown{min-width:160px;max-width:180px}
+        .fm-fi-date{min-width:150px;max-width:150px}
+        .fm-clear-btn{height:36px;min-width:100px}
         .fm-filters-row .p-dropdown,
         .fm-filters-row .p-calendar,
         .fm-filters-row .p-inputtext{height:36px}
