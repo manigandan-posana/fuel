@@ -823,19 +823,27 @@ body {
 .p-dialog .p-dialog-header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  padding: var(--spacing-4) var(--spacing-5);
+  padding: 20px 24px;
   font-weight: 700;
   font-size: var(--font-lg);
 }
 
 .p-dialog .p-dialog-content {
-  padding: var(--spacing-5);
+  padding: 0;
+  background: var(--bg-primary);
+}
+
+.p-dialog .p-dialog-footer {
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  padding: 0;
 }
 
 .dialog-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-6);
+  gap: 20px;
+  padding: 24px;
 }
 
 .form-field {
@@ -865,14 +873,67 @@ body {
 }
 
 /* ===== PRIMEREACT OVERRIDES ===== */
+
+/* Button Styles */
+.p-button {
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  font-size: 14px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.p-button.p-button-raised {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.p-button.p-button-raised:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
 .p-button-success {
   background: var(--primary-500) !important;
   border-color: var(--primary-500) !important;
+  color: white !important;
 }
 
 .p-button-success:hover {
   background: var(--primary-600) !important;
   border-color: var(--primary-600) !important;
+}
+
+.p-button-success:active {
+  background: var(--primary-700) !important;
+  border-color: var(--primary-700) !important;
+}
+
+.p-button-secondary,
+.p-button.p-button-outlined.p-button-secondary {
+  background: white !important;
+  border: 1.5px solid var(--gray-300) !important;
+  color: var(--gray-700) !important;
+}
+
+.p-button-secondary:hover,
+.p-button.p-button-outlined.p-button-secondary:hover {
+  background: var(--gray-50) !important;
+  border-color: var(--gray-400) !important;
+  color: var(--gray-800) !important;
+}
+
+.p-button-danger {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+.p-button-danger:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
+.p-button .p-button-icon {
+  font-size: 1rem;
 }
 
 .p-button-sm {

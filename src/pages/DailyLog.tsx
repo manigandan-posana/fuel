@@ -188,7 +188,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
             return (
                 <Button
                     label="Close Log"
-                    icon="pi pi-check"
+                    
                     className="p-button-sm p-button-success"
                     onClick={() => {
                         setSelectedLog(rowData);
@@ -283,7 +283,13 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     resetCreateForm();
                 }}
                 footer={
-                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
+                    <div style={{ 
+                        display: "flex", 
+                        gap: "12px", 
+                        justifyContent: "flex-end",
+                        padding: "16px 24px",
+                        marginTop: "8px"
+                    }}>
                         <Button
                             label="Cancel"
                             onClick={() => {
@@ -291,20 +297,19 @@ const DailyLog: React.FC<DailyLogProps> = ({
                                 resetCreateForm();
                             }}
                             outlined
-                            severity="success"
-                            size="small"
+                            className="p-button-secondary"
                         />
                         <Button
                             label="Create"
+                            icon="pi pi-check"
                             onClick={handleCreateLog}
                             severity="success"
                             raised
-                            size="small"
                         />
                     </div>
                 }
             >
-                <div className="p-fluid dl-dialog-form">
+                <div className="p-fluid dl-dialog-form" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div className="field" style={{ marginBottom: "1rem" }}>
                         <label htmlFor="create-date">Date *</label>
                         <Calendar
@@ -362,7 +367,13 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     resetCloseForm();
                 }}
                 footer={
-                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
+                    <div style={{ 
+                        display: "flex", 
+                        gap: "12px", 
+                        justifyContent: "flex-end",
+                        padding: "16px 24px",
+                        marginTop: "8px"
+                    }}>
                         <Button
                             label="Cancel"
                             onClick={() => {
@@ -371,21 +382,20 @@ const DailyLog: React.FC<DailyLogProps> = ({
                                 resetCloseForm();
                             }}
                             outlined
-                            severity="success"
-                            size="small"
+                            className="p-button-secondary"
                         />
                         <Button
                             label="Close Log"
+                            icon="pi pi-check"
                             onClick={handleCloseLog}
                             severity="success"
                             raised
-                            size="small"
                         />
                     </div>
                 }
             >
                 {selectedLog && (
-                    <div className="p-fluid">
+                    <div className="p-fluid" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div className="field" style={{ marginBottom: "1rem" }}>
                             <label>Vehicle</label>
                             <p style={{ fontWeight: "600", margin: "0.5rem 0" }}>

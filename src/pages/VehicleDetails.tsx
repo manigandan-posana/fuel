@@ -43,7 +43,6 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                         rounded
                         text
                         onClick={onBack}
-                        tooltip="Back to Vehicles"
                         className="vd-back"
                     />
                     <div className="vd-title">

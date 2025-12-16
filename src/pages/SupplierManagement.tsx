@@ -73,8 +73,6 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
                 onDeleteSupplier(rowData.id);
                 toast.success("🗑️ Supplier deleted");
             }}
-            tooltip="Delete"
-            tooltipOptions={{ position: "left" }}
         />
     );
 
@@ -157,15 +155,22 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
                 style={{ width: "500px" }}
                 onHide={() => setShowDialog(false)}
                 footer={
-                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                    <div style={{ 
+                        display: "flex", 
+                        gap: "12px", 
+                        justifyContent: "flex-end",
+                        padding: "16px 24px",
+                        marginTop: "8px"
+                    }}>
                         <Button
                             label="Cancel"
                             onClick={() => setShowDialog(false)}
                             outlined
-                            severity="success"
+                            className="p-button-secondary"
                         />
                         <Button
                             label="Save"
+                            icon="pi pi-check"
                             onClick={handleAddSupplier}
                             severity="success"
                             raised
@@ -173,7 +178,7 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
                     </div>
                 }
             >
-                <div className="dialog-form pt-4">
+                <div className="dialog-form" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <FloatLabel>
                         <InputText
                             id="supplierName"

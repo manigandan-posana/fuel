@@ -274,13 +274,11 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
     if (rowData.status === "open") {
       return (
         <Button
-          icon="pi pi-check"
+          
           rounded
           text
           severity="success"
           onClick={() => handleOpenClosingDialog(rowData)}
-          tooltip="Mark as Closed"
-          tooltipOptions={{ position: "left" }}
           className="fm-icon-btn"
         />
       );
@@ -476,7 +474,6 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
               label="Clear"
               icon="pi pi-filter-slash"
               size="small"
-              outlined
               onClick={() => {
                 setSearchQuery("");
                 setSelectedVehicleFilter(null);
@@ -711,20 +708,32 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         style={{ width: "520px", maxWidth: "92vw" }}
         onHide={() => setShowClosingDialog(false)}
         footer={
-          <div className="fm-dialog-footer">
+          <div style={{ 
+            display: "flex", 
+            gap: "12px", 
+            justifyContent: "flex-end",
+            padding: "16px 24px",
+            marginTop: "8px"
+          }}>
             <Button
               label="Cancel"
               icon="pi pi-times"
               onClick={() => setShowClosingDialog(false)}
-              severity="secondary"
               outlined
+              className="p-button-secondary"
             />
-            <Button label="Save" icon="pi pi-check" onClick={handleSaveClosing} severity="success" />
+            <Button 
+              label="Save" 
+              icon="pi pi-check"
+              onClick={handleSaveClosing} 
+              severity="success"
+              raised
+            />
           </div>
         }
       >
         {closingEntry && (
-          <div className="fm-dialog-body">
+          <div className="fm-dialog-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="fm-dialog-info">
               <div className="fm-dialog-veh">
                 <i className="pi pi-car" />
@@ -757,9 +766,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
               <div className="fm-upload-row">
                 <Button
                   label={closingKmPhoto ? "Change Photo" : "Upload Photo"}
-                  icon="pi pi-upload"
                   severity="secondary"
-                  outlined
                   size="small"
                   onClick={() => document.getElementById("closingPhotoInput")?.click()}
                   className="fm-upload-btn"
@@ -915,13 +922,12 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         /* Dialog */
         .fm-dialog-title{display:flex;align-items:center;gap:8px;font-weight:900}
         .fm-dialog-title i{color: var(--primary-color)}
-        .fm-dialog-footer{display:flex;justify-content:flex-end;gap:8px}
-        .fm-dialog-body{display:flex;flex-direction:column;gap:12px}
+        .fm-dialog-body{display:flex;flex-direction:column;gap:20px}
         .fm-dialog-info{
           border:1px solid var(--surface-200);
           border-radius:12px;
           background: var(--surface-50);
-          padding:10px;
+          padding:16px;
         }
         .fm-dialog-veh{display:flex;gap:10px;align-items:flex-start}
         .fm-dialog-veh i{font-size:18px;color:var(--primary-color);margin-top:2px}
