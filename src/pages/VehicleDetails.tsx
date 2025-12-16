@@ -277,10 +277,14 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                     <Column
                                         header="Duration"
                                         body={(rowData) => {
-                                            const start = rowData.startDate;
-                                            const end = rowData.endDate || new Date();
-                                            const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-                                            return <span className="vd-td-num">{days} days</span>;
+                                            const start = new Date(rowData.startDate);
+                                            start.setHours(0, 0, 0, 0);
+
+                                            const end = rowData.endDate ? new Date(rowData.endDate) : new Date();
+                                            end.setHours(0, 0, 0, 0);
+
+                                            const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                                            return <span className="vd-td-num">{days} {days === 1 ? 'day' : 'days'}</span>;
                                         }}
                                         style={{ minWidth: "100px" }}
                                     />

@@ -8,6 +8,7 @@ import { InputNumber } from "primereact/inputnumber";
 import { Calendar } from "primereact/calendar";
 import { FileUpload } from "primereact/fileupload";
 import { Tag } from "primereact/tag";
+import { FloatLabel } from "primereact/floatlabel";
 import toast from "react-hot-toast";
 import type { Vehicle, ProjectId } from "../types";
 
@@ -295,19 +296,22 @@ const DailyLog: React.FC<DailyLogProps> = ({
                         />
                     </div>
 
-                    <div className="field" style={{ marginBottom: "1rem" }}>
-                        <label htmlFor="create-vehicle">Vehicle *</label>
+                    <FloatLabel>
                         <Dropdown
-                            id="create-vehicle"
+                            inputId="create-vehicle"
                             value={createVehicleId}
                             options={activeVehicles.map((v) => ({
                                 label: `${v.vehicleName} (${v.vehicleNumber})`,
                                 value: v.id,
                             }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setCreateVehicleId(e.value)}
-                            placeholder="Select a vehicle"
+                            placeholder=" "
+                            className="w-full"
                         />
-                    </div>
+                        <label htmlFor="create-vehicle">Vehicle *</label>
+                    </FloatLabel>
 
                     <div className="field" style={{ marginBottom: "1rem" }}>
                         <label htmlFor="create-opening-km">Opening Km *</label>

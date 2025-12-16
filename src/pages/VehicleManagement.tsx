@@ -386,10 +386,13 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
 
                     <FloatLabel>
                         <Dropdown
-                            id="vehicleType"
+                            inputId="vehicleType"
                             value={vehicleForm.vehicleType}
                             options={VEHICLE_TYPES.map((t) => ({ label: t, value: t }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleType: e.value }))}
+                            placeholder=" "
                             className="w-full"
                         />
                         <label htmlFor="vehicleType">Vehicle Type</label>
@@ -397,10 +400,13 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
 
                     <FloatLabel>
                         <Dropdown
-                            id="fuelType"
+                            inputId="fuelType"
                             value={vehicleForm.fuelType}
                             options={FUEL_TYPES.map((t) => ({ label: t, value: t }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setVehicleForm((prev) => ({ ...prev, fuelType: e.value }))}
+                            placeholder=" "
                             className="w-full"
                         />
                         <label htmlFor="fuelType">Fuel Type</label>
@@ -420,10 +426,13 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
 
                     <FloatLabel>
                         <Dropdown
-                            id="status"
+                            inputId="status"
                             value={vehicleForm.status}
                             options={[{ label: "Active", value: "Active" }, { label: "Inactive", value: "Inactive" }]}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setVehicleForm((prev) => ({ ...prev, status: e.value }))}
+                            placeholder=" "
                             className="w-full"
                         />
                         <label htmlFor="status">Status</label>
@@ -470,10 +479,13 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
 
                     <FloatLabel>
                         <Dropdown
-                            id="editVehicleType"
+                            inputId="editVehicleType"
                             value={vehicleForm.vehicleType}
                             options={VEHICLE_TYPES.map((t) => ({ label: t, value: t }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleType: e.value }))}
+                            placeholder=" "
                             className="w-full"
                         />
                         <label htmlFor="editVehicleType">Vehicle Type</label>
@@ -481,10 +493,13 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
 
                     <FloatLabel>
                         <Dropdown
-                            id="editFuelType"
+                            inputId="editFuelType"
                             value={vehicleForm.fuelType}
                             options={FUEL_TYPES.map((t) => ({ label: t, value: t }))}
+                            optionLabel="label"
+                            optionValue="value"
                             onChange={(e) => setVehicleForm((prev) => ({ ...prev, fuelType: e.value }))}
+                            placeholder=" "
                             className="w-full"
                         />
                         <label htmlFor="editFuelType">Fuel Type</label>
