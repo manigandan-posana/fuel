@@ -78,6 +78,17 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
     [activeVehicles, activeFuelType]
   );
 
+  // Get the last closing km for the selected vehicle in new entry form
+  const lastClosingKmForNewEntry = useMemo(() => {
+    if (!newEntry.vehicleId) return null;
+    
+    const vehicleFuelEntries = fuelEntries
+      .filter((entry) => entry.vehicleId === newEntry.vehicleId && entry.status === "closed" && entry.closingKm > 0)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    return vehicleFuelEntries.length > 0 ? vehicleFuelEntries[0].closingKm : null;
+  }, [newEntry.vehicleId, fuelEntries]);
+
   const filteredFuelEntries = useMemo(() => {
     let filtered = fuelEntries.filter(
       (e) => e.projectId === selectedProject && e.fuelType === activeFuelType
@@ -161,6 +172,12 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
     }
     if (!newEntry.openingKm || isNaN(openingKm) || openingKm < 0) {
       toast.error("Please enter valid opening km");
+      return;
+    }
+
+    // Validate opening km is greater than or equal to last closing km
+    if (lastClosingKmForNewEntry !== null && openingKm < lastClosingKmForNewEntry) {
+      toast.error(`Opening km must be greater than or equal to the last closing km (${lastClosingKmForNewEntry.toFixed(1)} km)`);
       return;
     }
 
@@ -603,7 +620,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
               <label htmlFor="entryPrice">Price / L</label>
             </FloatLabel>
 
-            <FloatLabel className="fm-fl fm-narrow">
+            <FloatLabel className="fm-fl fm-narrow" style={{ position: "relative" }}>
               <InputText
                 id="entryOpeningKm"
                 value={newEntry.openingKm}
@@ -612,10 +629,32 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                   if (value === "" || /^\d*\.?\d*$/.test(value))
                     setNewEntry((prev) => ({ ...prev, openingKm: value }));
                 }}
-                className="p-inputtext-sm fm-input"
+                className={`p-inputtext-sm fm-input ${
+                  lastClosingKmForNewEntry !== null && 
+                  newEntry.openingKm && 
+                  parseFloat(newEntry.openingKm) < lastClosingKmForNewEntry 
+                    ? "p-invalid" 
+                    : ""
+                }`}
                 keyfilter="num"
               />
               <label htmlFor="entryOpeningKm">Opening Km</label>
+              {lastClosingKmForNewEntry !== null && newEntry.openingKm && parseFloat(newEntry.openingKm) < lastClosingKmForNewEntry && (
+                <small style={{ 
+                  position: "absolute",
+                  top: "100%",
+                  left: "0",
+                  color: "#ef4444", 
+                  display: "block", 
+                  marginTop: "4px",
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap"
+                }}>
+                  <i className="pi pi-exclamation-triangle" style={{ marginRight: "4px", fontSize: "10px" }} />
+                  Must be ≥ {lastClosingKmForNewEntry.toFixed(1)} km
+                </small>
+              )}
             </FloatLabel>
 
             <Button
