@@ -55,15 +55,31 @@ const DailyLog: React.FC<DailyLogProps> = ({
     const [closeClosingKm, setCloseClosingKm] = useState<number | null>(null);
     const [closeClosingPhoto, setCloseClosingPhoto] = useState<string>("");
 
+    // Filter logs for the current project and current date
     const projectLogs = useMemo(() => {
-        return dailyLogs.filter((log) => log.projectId === selectedProject);
+        const today = new Date().toDateString();
+        return dailyLogs.filter(
+            (log) =>
+                log.projectId === selectedProject &&
+                new Date(log.date).toDateString() === today
+        );
     }, [dailyLogs, selectedProject]);
 
-    const activeVehicles = useMemo(() => {
-        return vehicles.filter(
+    // Get vehicles that don't have an active (open) log currently
+    const availableVehicles = useMemo(() => {
+        const activeProjectVehicles = vehicles.filter(
             (v) => v.projectId === selectedProject && v.status === "Active"
         );
-    }, [vehicles, selectedProject]);
+
+        // Find vehicle IDs that already have an OPEN log (global check, not just today)
+        const vehiclesWithOpenLog = new Set(
+            dailyLogs
+                .filter(log => log.status === "open" && log.projectId === selectedProject)
+                .map(log => log.vehicleId)
+        );
+
+        return activeProjectVehicles.filter(v => !vehiclesWithOpenLog.has(v.id));
+    }, [vehicles, dailyLogs, selectedProject]);
 
     const handleCreateLog = () => {
         if (!createVehicleId || createOpeningKm === null) {
@@ -191,7 +207,10 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     label="Create Daily Log"
                     icon="pi pi-plus"
                     className="p-button-success"
-                    onClick={() => setShowCreateDialog(true)}
+                    onClick={() => {
+                        resetCreateForm();
+                        setShowCreateDialog(true);
+                    }}
                 />
             </div>
 
@@ -290,9 +309,9 @@ const DailyLog: React.FC<DailyLogProps> = ({
                         <Calendar
                             id="create-date"
                             value={createDate}
-                            onChange={(e) => setCreateDate(e.value as Date)}
+                            disabled
                             dateFormat="dd/mm/yy"
-                            showIcon
+                            className="w-full"
                         />
                     </div>
 
@@ -300,15 +319,16 @@ const DailyLog: React.FC<DailyLogProps> = ({
                         <Dropdown
                             inputId="create-vehicle"
                             value={createVehicleId}
-                            options={activeVehicles.map((v) => ({
+                            options={availableVehicles.map((v) => ({
                                 label: `${v.vehicleName} (${v.vehicleNumber})`,
                                 value: v.id,
                             }))}
                             optionLabel="label"
                             optionValue="value"
                             onChange={(e) => setCreateVehicleId(e.value)}
-                            placeholder=" "
+                            placeholder="Select available vehicle"
                             className="w-full"
+                            emptyMessage="No available vehicles (all have open logs)"
                         />
                         <label htmlFor="create-vehicle">Vehicle *</label>
                     </FloatLabel>
