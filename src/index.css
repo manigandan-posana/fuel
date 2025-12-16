@@ -23,21 +23,41 @@ code {
    ========================= */
 
 /* Card padding normalize (Prime Card adds its own padding) */
-.fm-filters-card .p-card-body { padding: 10px !important; }
-.fm-filters-card .p-card-content { padding: 0 !important; }
-
-/* Flex sizing for each FloatLabel item (YOU WERE MISSING THESE) */
-.fm-filters-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  align-items:flex-end;
+.fm-filters-card .p-card-body {
+  padding: 10px !important;
 }
 
-.fm-fi{ flex: 1 1 200px; min-width: 190px; }
-.fm-fi-search{ flex: 2 1 320px; min-width: 260px; }
-.fm-fi-date{ flex: 1 1 170px; min-width: 160px; }
-.fm-fi-sm{ flex: 1 1 160px; min-width: 150px; }
+.fm-filters-card .p-card-content {
+  padding: 0 !important;
+}
+
+/* Flex sizing for each FloatLabel item (YOU WERE MISSING THESE) */
+.fm-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.fm-fi {
+  flex: 1 1 200px;
+  min-width: 190px;
+}
+
+.fm-fi-search {
+  flex: 2 1 320px;
+  min-width: 260px;
+}
+
+.fm-fi-date {
+  flex: 1 1 170px;
+  min-width: 160px;
+}
+
+.fm-fi-sm {
+  flex: 1 1 160px;
+  min-width: 150px;
+}
 
 /* Full width controls inside FloatLabel */
 .fm-filters-row .p-float-label,
@@ -57,75 +77,154 @@ code {
 }
 
 /* Calendar alignment (root must behave like the input) */
-.fm-filters-row .p-calendar{
-  display:flex !important;
-  align-items:stretch;
+.fm-filters-row .p-calendar {
+  display: flex !important;
+  align-items: stretch;
 }
-.fm-filters-row .p-calendar .p-inputtext{ flex:1; }
-.fm-filters-row .p-calendar .p-button{ width:36px; }
+
+.fm-filters-row .p-calendar .p-inputtext {
+  flex: 1;
+}
+
+.fm-filters-row .p-calendar .p-button {
+  width: 36px;
+}
 
 /* Search icon PERFECT center (replace bottom-based positioning) */
-.p-float-label.fm-fi-search { position: relative; }
-.fm-search-ico{
-  position:absolute;
-  left:0.75rem;
-  top:50%;
-  transform:translateY(-50%);
-  bottom:auto;
-  font-size:12px;
-  opacity:.75;
-  pointer-events:none;
+.p-float-label.fm-fi-search {
+  position: relative;
 }
-.fm-fi-search .p-inputtext{ padding-left:2.25rem !important; }
+
+.fm-search-ico {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  bottom: auto;
+  font-size: 12px;
+  opacity: .75;
+  pointer-events: none;
+}
+
+.fm-fi-search .p-inputtext {
+  padding-left: 2.25rem !important;
+}
 
 /* Move the FloatLabel text to the right for search (so it doesn't sit over the icon) */
-.p-float-label.fm-fi-search > label{ left:2.25rem; }
+.p-float-label.fm-fi-search>label {
+  left: 2.25rem;
+}
 
 /* Clear button align with inputs */
-.fm-clear-btn{
-  height:36px !important;
-  min-width:110px;
-  align-self:flex-end;
+.fm-clear-btn {
+  height: 36px !important;
+  min-width: 110px;
+  align-self: flex-end;
 }
 
 /* =========================
    DROPDOWN FIX (Filters + Add)
    ========================= */
 .fm-filters-row .p-float-label,
-.fm-add-row .p-float-label { display:block; }
+.fm-add-row .p-float-label {
+  display: block;
+}
 
 .fm-filters-row .p-dropdown,
 .fm-add-row .p-dropdown {
-  width:100% !important;
-  height:36px !important;
-  display:flex !important;
-  align-items:stretch;
-  overflow:hidden;
+  width: 100% !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: stretch;
+  overflow: hidden;
 }
 
 .fm-filters-row .p-dropdown .p-dropdown-label,
 .fm-add-row .p-dropdown .p-dropdown-label {
-  height:100% !important;
-  display:flex !important;
-  align-items:center;
-  padding:0 0.75rem !important;
-  border:0 !important;
-  box-shadow:none !important;
-  background:transparent;
-  line-height:1;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center;
+  padding: 0 0.75rem !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fm-filters-row .p-dropdown .p-dropdown-label.p-inputtext,
-.fm-add-row .p-dropdown .p-dropdown-label.p-inputtext { border:0 !important; }
+.fm-add-row .p-dropdown .p-dropdown-label.p-inputtext {
+  border: 0 !important;
+}
 
 .fm-filters-row .p-dropdown .p-dropdown-trigger,
-.fm-add-row .p-dropdown .p-dropdown-trigger{
-  height:100% !important;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-left:0 !important;
+.fm-add-row .p-dropdown .p-dropdown-trigger {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 0 !important;
+}
+
+/* =========================
+   VEHICLE MANAGEMENT DIALOG FIX
+   ========================= */
+.vm-dialog-form .p-float-label {
+  display: block;
+}
+
+.vm-dialog-form .p-dropdown {
+  width: 100% !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.vm-dialog-form .p-dropdown .p-dropdown-label {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center;
+  padding: 0 0.75rem !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vm-dialog-form .p-dropdown .p-dropdown-label.p-inputtext {
+  border: 0 !important;
+}
+
+.vm-dialog-form .p-dropdown .p-dropdown-trigger {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 0 !important;
+}
+
+.vm-dialog-form .p-inputtext,
+.vm-dialog-form .p-calendar .p-inputtext {
+  height: 40px !important;
+}
+
+.vm-dialog-form .p-calendar {
+  display: flex !important;
+  align-items: stretch;
+  width: 100%;
+}
+
+.vm-dialog-form .p-calendar .p-inputtext {
+  flex: 1;
+}
+
+.vm-dialog-form .p-calendar .p-button {
+  width: 40px;
+  height: 40px !important;
 }

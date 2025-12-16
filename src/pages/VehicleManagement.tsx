@@ -363,7 +363,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
                 }
             >
-                <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
+                <div className="dialog-form vm-dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
                     <FloatLabel>
                         <InputText
                             id="vehicleName"
@@ -456,7 +456,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
                 }
             >
-                <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
+                <div className="dialog-form vm-dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
                     <FloatLabel>
                         <InputText
                             id="editVehicleName"
@@ -531,7 +531,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 }
             >
                 {selectedVehicle && (
-                    <div className="dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
+                    <div className="dialog-form vm-dialog-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-5)' }}>
                         <div style={{
                             background: 'var(--bg-secondary)',
                             padding: 'var(--spacing-4)',
