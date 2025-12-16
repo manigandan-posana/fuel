@@ -876,10 +876,16 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
           color: var(--text-color);
           border-bottom-color: var(--primary-color);
         }
+        .fm-mode-tabs .fm-tab.active{
+          border-bottom-color: #10b981;
+        }
+        .fm-fuel-tabs .fm-tab.active{
+          border-bottom-color: #f97316;
+        }
         .fm-divider{
           width:1px;
           height:18px;
-          background: var(--surface-200);
+          background: linear-gradient(to bottom, rgba(249,115,22,0.3), rgba(249,115,22,0.6), rgba(249,115,22,0.3));
           margin: 0 6px;
         }
 

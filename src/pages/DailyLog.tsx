@@ -65,6 +65,17 @@ const DailyLog: React.FC<DailyLogProps> = ({
         );
     }, [dailyLogs, selectedProject]);
 
+    // Get the last closing km for the selected vehicle
+    const lastClosingKm = useMemo(() => {
+        if (!createVehicleId) return null;
+        
+        const vehicleLogs = dailyLogs
+            .filter((log) => log.vehicleId === createVehicleId && log.status === "closed" && log.closingKm !== undefined)
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        return vehicleLogs.length > 0 ? vehicleLogs[0].closingKm : null;
+    }, [createVehicleId, dailyLogs]);
+
     // Get vehicles that don't have an active (open) log currently
     const availableVehicles = useMemo(() => {
         const activeProjectVehicles = vehicles.filter(
@@ -94,6 +105,12 @@ const DailyLog: React.FC<DailyLogProps> = ({
 
         if (existingOpenLog) {
             toast.error("This vehicle already has an open daily log. Please close it first.");
+            return;
+        }
+
+        // Validate opening km is greater than or equal to last closing km
+        if (lastClosingKm !== null && createOpeningKm < lastClosingKm) {
+            toast.error(`Opening km must be greater than or equal to the last closing km (${lastClosingKm.toFixed(1)} km)`);
             return;
         }
 
@@ -339,6 +356,21 @@ const DailyLog: React.FC<DailyLogProps> = ({
                         <label htmlFor="create-vehicle">Vehicle *</label>
                     </FloatLabel>
 
+                    {createVehicleId && lastClosingKm !== null && (
+                        <div style={{
+                            padding: "12px 16px",
+                            background: "rgba(16, 185, 129, 0.1)",
+                            border: "1px solid rgba(16, 185, 129, 0.3)",
+                            borderRadius: "8px",
+                            fontSize: "13px",
+                            fontWeight: "600",
+                            color: "var(--text-color)"
+                        }}>
+                            <i className="pi pi-info-circle" style={{ marginRight: "8px", color: "#10b981" }} />
+                            Last Closing Km: <span style={{ fontWeight: "800" }}>{lastClosingKm.toFixed(1)} km</span>
+                        </div>
+                    )}
+
                     <div className="field" style={{ marginBottom: "1rem" }}>
                         <label htmlFor="create-opening-km">Opening Km *</label>
                         <InputNumber
@@ -349,7 +381,20 @@ const DailyLog: React.FC<DailyLogProps> = ({
                             minFractionDigits={1}
                             maxFractionDigits={1}
                             placeholder="Enter opening km"
+                            className={lastClosingKm !== null && createOpeningKm !== null && createOpeningKm < lastClosingKm ? "p-invalid" : ""}
                         />
+                        {lastClosingKm !== null && createOpeningKm !== null && createOpeningKm < lastClosingKm && (
+                            <small style={{ 
+                                color: "#ef4444", 
+                                display: "block", 
+                                marginTop: "6px",
+                                fontSize: "12px",
+                                fontWeight: "600"
+                            }}>
+                                <i className="pi pi-exclamation-triangle" style={{ marginRight: "6px" }} />
+                                Opening km must be greater than or equal to {lastClosingKm.toFixed(1)} km
+                            </small>
+                        )}
                     </div>
 
 
@@ -421,29 +466,6 @@ const DailyLog: React.FC<DailyLogProps> = ({
                                 maxFractionDigits={1}
                                 placeholder="Enter closing km"
                             />
-                        </div>
-
-                        <div className="field" style={{ marginBottom: "1rem" }}>
-                            <label htmlFor="close-closing-photo">Closing Km Photo (Optional)</label>
-                            <FileUpload
-                                id="close-closing-photo"
-                                mode="basic"
-                                accept="image/*"
-                                maxFileSize={5000000}
-                                onSelect={(e) => handleImageUpload(e, false)}
-                                auto
-                                chooseLabel="Upload Photo"
-                                chooseOptions={{ icon: "", iconOnly: false }}
-                            />
-                            {closeClosingPhoto && (
-                                <div style={{ marginTop: "0.5rem" }}>
-                                    <img
-                                        src={closeClosingPhoto}
-                                        alt="Closing km"
-                                        style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px" }}
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                 )}

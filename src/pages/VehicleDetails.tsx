@@ -1,9 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "primereact/button";
 import { TabView, TabPanel } from "primereact/tabview";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Card } from "primereact/card";
+import { Calendar } from "primereact/calendar";
+import { Chart } from "primereact/chart";
 import type { Vehicle, FuelEntry } from "../types";
 
 interface VehicleDetailsProps {
@@ -13,6 +15,9 @@ interface VehicleDetailsProps {
 }
 
 const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, onBack }) => {
+    const [dateFrom, setDateFrom] = useState<Date | null>(null);
+    const [dateTo, setDateTo] = useState<Date | null>(null);
+
     const vehicleFuelEntries = useMemo(() => {
         return fuelEntries
             .filter((e) => e.vehicleId === vehicle.id)
@@ -28,6 +33,129 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
 
         return { totalKm, totalLitres, totalCost, avgMileage, totalEntries: vehicleFuelEntries.length };
     }, [vehicleFuelEntries]);
+
+    // Filter for Daily Details tab
+    const filteredDailyData = useMemo(() => {
+        let filtered = vehicleFuelEntries.filter((e) => e.status === "closed");
+
+        if (dateFrom) {
+            const from = new Date(dateFrom);
+            from.setHours(0, 0, 0, 0);
+            filtered = filtered.filter((e) => e.date >= from);
+        }
+        if (dateTo) {
+            const to = new Date(dateTo);
+            to.setHours(23, 59, 59, 999);
+            filtered = filtered.filter((e) => e.date <= to);
+        }
+
+        // Group by date
+        const grouped = filtered.reduce((acc, entry) => {
+            const dateKey = entry.date.toLocaleDateString();
+            if (!acc[dateKey]) {
+                acc[dateKey] = {
+                    date: entry.date,
+                    distance: 0,
+                    litres: 0,
+                    cost: 0,
+                    count: 0,
+                };
+            }
+            acc[dateKey].distance += entry.distance || 0;
+            acc[dateKey].litres += entry.litres || 0;
+            acc[dateKey].cost += entry.totalCost || 0;
+            acc[dateKey].count += 1;
+            return acc;
+        }, {} as Record<string, { date: Date; distance: number; litres: number; cost: number; count: number }>);
+
+        return Object.values(grouped).sort((a, b) => b.date.getTime() - a.date.getTime());
+    }, [vehicleFuelEntries, dateFrom, dateTo]);
+
+    // Chart data for daily analysis
+    const chartData = useMemo(() => {
+        const sortedData = [...filteredDailyData].reverse();
+        
+        return {
+            labels: sortedData.map((d) => d.date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })),
+            datasets: [
+                {
+                    label: 'Distance (km)',
+                    data: sortedData.map((d) => d.distance),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                },
+            ],
+        };
+    }, [filteredDailyData]);
+
+    const fuelChartData = useMemo(() => {
+        const sortedData = [...filteredDailyData].reverse();
+        
+        return {
+            labels: sortedData.map((d) => d.date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })),
+            datasets: [
+                {
+                    label: 'Fuel (Litres)',
+                    data: sortedData.map((d) => d.litres),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                },
+            ],
+        };
+    }, [filteredDailyData]);
+
+    const costChartData = useMemo(() => {
+        const sortedData = [...filteredDailyData].reverse();
+        
+        return {
+            labels: sortedData.map((d) => d.date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })),
+            datasets: [
+                {
+                    label: 'Cost (₹)',
+                    data: sortedData.map((d) => d.cost),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                },
+            ],
+        };
+    }, [filteredDailyData]);
+
+    const chartOptions = {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    font: {
+                        size: 11,
+                    },
+                },
+            },
+            x: {
+                ticks: {
+                    font: {
+                        size: 10,
+                    },
+                },
+            },
+        },
+    };
+
+    const dailyStats = useMemo(() => {
+        const totalDistance = filteredDailyData.reduce((sum, d) => sum + d.distance, 0);
+        const totalFuel = filteredDailyData.reduce((sum, d) => sum + d.litres, 0);
+        const totalCost = filteredDailyData.reduce((sum, d) => sum + d.cost, 0);
+        
+        return { totalDistance, totalFuel, totalCost };
+    }, [filteredDailyData]);
 
     const dateTemplate = (rowData: FuelEntry) => rowData.date.toLocaleDateString();
     const numberTemplate = (value: number, decimals = 2) => value.toFixed(decimals);
@@ -124,6 +252,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                 emptyMessage="No fuel entries found for this vehicle"
                                 className="p-datatable-sm vd-table"
                                 stripedRows
+                                sortIcon={() => null}
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
                                 rowsPerPageOptions={[10, 25, 50]}
                             >
@@ -131,23 +260,19 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                     field="date"
                                     header="Date"
                                     body={dateTemplate}
-                                    sortable
                                     style={{ width: "90px" }}
                                 />
                                 <Column
                                     field="supplierName"
                                     header="Supplier"
                                     body={(rowData: FuelEntry) => <span className="vd-td-strong">{rowData.supplierName}</span>}
-                                    sortable
                                     style={{ width: "120px" }}
                                 />
                                 <Column
                                     field="litres"
                                     header="Litres"
-                                    body={(rowData: FuelEntry) => <span className="vd-td-num">{numberTemplate(rowData.litres, 2)} L</span>}
-                                    sortable
-                                    style={{ width: "75px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    body={(rowData: FuelEntry) => <span>{numberTemplate(rowData.litres, 2)} L</span>}
+                                    style={{ width: "75px" }}
                                 />
                                 <Column
                                     field="pricePerLitre"
@@ -155,9 +280,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                     body={(rowData: FuelEntry) =>
                                         <span>{rowData.pricePerLitre ? "₹" + numberTemplate(rowData.pricePerLitre, 2) : "—"}</span>
                                     }
-                                    sortable
-                                    style={{ width: "80px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    style={{ width: "80px" }}
                                 />
                                 <Column
                                     field="totalCost"
@@ -165,17 +288,13 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                     body={(rowData: FuelEntry) => (
                                         <span className="vd-td-money">{formatCurrency(rowData.totalCost || 0)}</span>
                                     )}
-                                    sortable
-                                    style={{ width: "100px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    style={{ width: "100px" }}
                                 />
                                 <Column
                                     field="openingKm"
                                     header="Opening"
                                     body={(rowData: FuelEntry) => <span>{numberTemplate(rowData.openingKm, 1)}</span>}
-                                    sortable
-                                    style={{ width: "75px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    style={{ width: "75px" }}
                                 />
                                 <Column
                                     field="closingKm"
@@ -187,9 +306,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                             <span className="vd-muted">—</span>
                                         )
                                     }
-                                    sortable
-                                    style={{ width: "75px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    style={{ width: "75px" }}
                                 />
                                 <Column
                                     field="distance"
@@ -201,9 +318,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                             <span className="vd-muted">—</span>
                                         )
                                     }
-                                    sortable
-                                    style={{ width: "80px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    style={{ width: "80px" }}
                                 />
                                 <Column
                                     field="mileage"
@@ -215,9 +330,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                             <span className="vd-muted">—</span>
                                         )
                                     }
-                                    sortable
-                                    style={{ width: "75px", textAlign: "right" }}
-                                    headerStyle={{ textAlign: "right" }}
+                                    style={{ width: "75px" }}
                                 />
                                 <Column
                                     header="Status"
@@ -227,9 +340,178 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                         </span>
                                     )}
                                     style={{ width: "80px", textAlign: "center" }}
-                                    headerStyle={{ textAlign: "center" }}
                                 />
                             </DataTable>
+                        </div>
+                    </TabPanel>
+
+                    <TabPanel header="Daily Details" leftIcon="pi pi-calendar">
+                        <div className="vd-panel">
+                            {/* Date Filters */}
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '12px', 
+                                marginBottom: '16px', 
+                                padding: '12px', 
+                                background: 'var(--surface-50)', 
+                                borderRadius: '8px',
+                                border: '1px solid var(--surface-200)'
+                            }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)' }}>From Date</label>
+                                    <Calendar
+                                        value={dateFrom}
+                                        onChange={(e) => setDateFrom(e.value as Date)}
+                                        dateFormat="dd/mm/yy"
+                                        showIcon
+                                        placeholder="Select start date"
+                                        style={{ width: '200px' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)' }}>To Date</label>
+                                    <Calendar
+                                        value={dateTo}
+                                        onChange={(e) => setDateTo(e.value as Date)}
+                                        dateFormat="dd/mm/yy"
+                                        showIcon
+                                        placeholder="Select end date"
+                                        style={{ width: '200px' }}
+                                    />
+                                </div>
+                                {(dateFrom || dateTo) && (
+                                    <Button
+                                        label="Clear"
+                                        icon="pi pi-times"
+                                        outlined
+                                        size="small"
+                                        onClick={() => {
+                                            setDateFrom(null);
+                                            setDateTo(null);
+                                        }}
+                                        style={{ marginTop: 'auto', height: '40px' }}
+                                    />
+                                )}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '16px' }}>
+                                {/* Left: Daily Table */}
+                                <div>
+                                    <DataTable
+                                        value={filteredDailyData}
+                                        dataKey="date"
+                                        emptyMessage="No data found for the selected period"
+                                        className="p-datatable-sm vd-table"
+                                        stripedRows
+                                        paginator
+                                        rows={10}
+                                        sortIcon={() => null}
+                                    >
+                                        <Column
+                                            field="date"
+                                            header="Date"
+                                            body={(rowData) => rowData.date.toLocaleDateString()}
+                                            style={{ width: "100px" }}
+                                        />
+                                        <Column
+                                            field="distance"
+                                            header="Distance (km)"
+                                            body={(rowData) => <span className="vd-td-strong">{numberTemplate(rowData.distance, 1)}</span>}
+                                            style={{ width: "100px" }}
+                                        />
+                                    </DataTable>
+                                </div>
+
+                                {/* Right: Analysis Cards & Charts */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {/* Summary Cards */}
+                                    <div style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: 'repeat(3, 1fr)', 
+                                        gap: '12px' 
+                                    }}>
+                                        <div style={{
+                                            padding: '12px',
+                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                            borderRadius: '8px',
+                                            color: 'white'
+                                        }}>
+                                            <div style={{ fontSize: '11px', opacity: 0.9 }}>Total Distance</div>
+                                            <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '4px' }}>
+                                                {numberTemplate(dailyStats.totalDistance, 1)} km
+                                            </div>
+                                        </div>
+                                        <div style={{
+                                            padding: '12px',
+                                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                            borderRadius: '8px',
+                                            color: 'white'
+                                        }}>
+                                            <div style={{ fontSize: '11px', opacity: 0.9 }}>Total Fuel</div>
+                                            <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '4px' }}>
+                                                {numberTemplate(dailyStats.totalFuel, 1)} L
+                                            </div>
+                                        </div>
+                                        <div style={{
+                                            padding: '12px',
+                                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                            borderRadius: '8px',
+                                            color: 'white'
+                                        }}>
+                                            <div style={{ fontSize: '11px', opacity: 0.9 }}>Total Cost</div>
+                                            <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '4px' }}>
+                                                {formatCurrency(dailyStats.totalCost)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Charts */}
+                                    <div style={{ 
+                                        padding: '12px', 
+                                        background: 'white', 
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--surface-200)'
+                                    }}>
+                                        <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+                                            <i className="pi pi-chart-line" style={{ marginRight: '6px' }} />
+                                            Daily Distance Travelled
+                                        </div>
+                                        <div style={{ height: '180px' }}>
+                                            <Chart type="line" data={chartData} options={chartOptions} style={{ height: '100%' }} />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ 
+                                        padding: '12px', 
+                                        background: 'white', 
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--surface-200)'
+                                    }}>
+                                        <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+                                            <i className="pi pi-bolt" style={{ marginRight: '6px' }} />
+                                            Daily Fuel Consumption
+                                        </div>
+                                        <div style={{ height: '180px' }}>
+                                            <Chart type="line" data={fuelChartData} options={chartOptions} style={{ height: '100%' }} />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ 
+                                        padding: '12px', 
+                                        background: 'white', 
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--surface-200)'
+                                    }}>
+                                        <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+                                            <i className="pi pi-indian-rupee" style={{ marginRight: '6px' }} />
+                                            Daily Cost Analysis
+                                        </div>
+                                        <div style={{ height: '180px' }}>
+                                            <Chart type="line" data={costChartData} options={chartOptions} style={{ height: '100%' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </TabPanel>
 
@@ -385,26 +667,39 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
 
         .vd-shell{border-radius:12px;overflow:hidden}
         .vd-tabview{border-radius:12px}
-        /* Pro Tab look */
+        /* Modern Pill Tab Design */
         .vd-tabview .p-tabview-nav{
-          padding:8px;
+          padding:12px;
           gap:8px;
           border:0;
-          background: var(--surface-0);
+          background: linear-gradient(to bottom, var(--surface-50), var(--surface-0));
+          border-bottom: 1px solid var(--surface-200);
         }
+        .vd-tabview .p-tabview-nav li{margin:0}
         .vd-tabview .p-tabview-nav li .p-tabview-nav-link{
-          border:1px solid var(--surface-200);
-          border-radius:999px;
-          padding:6px 10px;
-          font-size:12px;
-          font-weight:800;
-          background: var(--surface-0);
-          transition: all .15s ease;
-          box-shadow: 0 1px 0 rgba(0,0,0,.03);
+          border:1.5px solid transparent;
+          border-radius:20px;
+          padding:8px 16px;
+          font-size:13px;
+          font-weight:700;
+          background: transparent;
+          color: var(--text-color-secondary);
+          transition: all .2s ease;
+          box-shadow: none;
+        }
+        .vd-tabview .p-tabview-nav li .p-tabview-nav-link:hover{
+          background: rgba(16, 185, 129, 0.08);
+          color: var(--primary-color);
         }
         .vd-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link{
           border-color: var(--primary-color);
-          box-shadow: 0 4px 14px rgba(0,0,0,.08);
+          background: var(--primary-color);
+          color: white;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .vd-tabview .p-tabview-nav li .p-tabview-nav-link .p-tabview-left-icon{
+          margin-right: 6px;
+          font-size: 14px;
         }
         .vd-tabview .p-tabview-panels{padding:0}
         .vd-panel{padding:10px}
