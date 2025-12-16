@@ -307,35 +307,29 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                                     handleOpenStatusDialog(rowData);
                                 }}
                                 style={{
-                                    display: 'inline-flex',
+                                    display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
-                                    padding: '6px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
-                                    background: isActive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    color: isActive ? '#059669' : '#dc2626',
-                                    border: `1.5px solid ${isActive ? '#059669' : '#dc2626'}`,
+                                    color: isActive ? '#10b981' : '#ef4444',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1.05)';
-                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                                    e.currentTarget.style.color = isActive ? '#059669' : '#dc2626';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.color = isActive ? '#10b981' : '#ef4444';
                                 }}
                             >
-                                <i className={isActive ? 'pi pi-check-circle' : 'pi pi-times-circle'} style={{ fontSize: '14px' }} />
-                                {isActive ? 'Active' : 'Inactive'}
+                                <i className={isActive ? 'pi pi-check-circle' : 'pi pi-times-circle'} style={{ fontSize: '16px' }} />
+                                <span style={{ fontSize: '12px', fontWeight: '600' }}>
+                                    {isActive ? 'Active' : 'Inactive'}
+                                </span>
                             </div>
                         );
                     }}
                     sortable
-                    style={{ minWidth: '90px' }}
+                    style={{ minWidth: '110px' }}
                 />
                 <Column
                     header="Total Km"
