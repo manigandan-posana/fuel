@@ -124,24 +124,30 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                 emptyMessage="No fuel entries found for this vehicle"
                                 className="p-datatable-sm vd-table"
                                 stripedRows
-                                responsiveLayout="scroll"
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
                                 rowsPerPageOptions={[10, 25, 50]}
                             >
-                                <Column field="date" header="Date" body={dateTemplate} sortable style={{ minWidth: "110px" }} />
+                                <Column
+                                    field="date"
+                                    header="Date"
+                                    body={dateTemplate}
+                                    sortable
+                                    style={{ width: "90px" }}
+                                />
                                 <Column
                                     field="supplierName"
                                     header="Supplier"
                                     body={(rowData: FuelEntry) => <span className="vd-td-strong">{rowData.supplierName}</span>}
                                     sortable
-                                    style={{ minWidth: "150px" }}
+                                    style={{ width: "120px" }}
                                 />
                                 <Column
                                     field="litres"
                                     header="Litres"
                                     body={(rowData: FuelEntry) => <span className="vd-td-num">{numberTemplate(rowData.litres, 2)} L</span>}
                                     sortable
-                                    style={{ minWidth: "95px" }}
+                                    style={{ width: "75px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     field="pricePerLitre"
@@ -150,7 +156,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                         <span>{rowData.pricePerLitre ? "₹" + numberTemplate(rowData.pricePerLitre, 2) : "—"}</span>
                                     }
                                     sortable
-                                    style={{ minWidth: "95px" }}
+                                    style={{ width: "80px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     field="totalCost"
@@ -159,14 +166,16 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                         <span className="vd-td-money">{formatCurrency(rowData.totalCost || 0)}</span>
                                     )}
                                     sortable
-                                    style={{ minWidth: "120px" }}
+                                    style={{ width: "100px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     field="openingKm"
                                     header="Opening"
                                     body={(rowData: FuelEntry) => <span>{numberTemplate(rowData.openingKm, 1)}</span>}
                                     sortable
-                                    style={{ minWidth: "95px" }}
+                                    style={{ width: "75px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     field="closingKm"
@@ -179,7 +188,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                         )
                                     }
                                     sortable
-                                    style={{ minWidth: "95px" }}
+                                    style={{ width: "75px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     field="distance"
@@ -192,7 +202,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                         )
                                     }
                                     sortable
-                                    style={{ minWidth: "105px" }}
+                                    style={{ width: "80px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     field="mileage"
@@ -205,7 +216,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                         )
                                     }
                                     sortable
-                                    style={{ minWidth: "105px" }}
+                                    style={{ width: "75px", textAlign: "right" }}
+                                    headerStyle={{ textAlign: "right" }}
                                 />
                                 <Column
                                     header="Status"
@@ -214,7 +226,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({ vehicle, fuelEntries, o
                                             {rowData.status === "closed" ? "Closed" : "Open"}
                                         </span>
                                     )}
-                                    style={{ minWidth: "95px" }}
+                                    style={{ width: "80px", textAlign: "center" }}
+                                    headerStyle={{ textAlign: "center" }}
                                 />
                             </DataTable>
                         </div>
