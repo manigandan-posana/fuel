@@ -537,7 +537,6 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 }
                 dateFormat="dd/mm/yy"
                 showIcon
-                iconPos="left"
                 className="p-inputtext-sm fm-cal"
               />
               <label htmlFor="entryDate">Date</label>
