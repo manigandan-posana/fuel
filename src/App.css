@@ -989,6 +989,20 @@ body {
   font-weight: 600;
 }
 
+/* ===== DROPDOWN GLOBAL STYLES ===== */
+.p-dropdown .p-dropdown-label {
+  font-size: 11px !important;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  font-size: 11px !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.p-dropdown-panel .p-dropdown-empty-message {
+  font-size: 11px !important;
+}
+
 /* ===== CARD COMPONENT ===== */
 .p-card {
   background: white;
@@ -1224,20 +1238,21 @@ body {
   /* Match app header size */
   line-height: 1;
 }
+
 /* Hide FileUpload Basic Mode Icon */
 .hidden-icon .p-button-icon {
-    display: none !important;
+  display: none !important;
 }
 
 /* Ensure the button text is centered when icon is hidden */
 .hidden-icon .p-button-label {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-align: center;
-    width: 100%;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  text-align: center;
+  width: 100%;
 }
 
 /* Additional specificity if needed */
 .p-fileupload-choose.hidden-icon .p-button-icon-left {
-    display: none !important;
+  display: none !important;
 }

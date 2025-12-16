@@ -185,33 +185,51 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
     };
 
     const vehicleActionsTemplate = (rowData: Vehicle) => (
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-            <Button
-                icon="pi pi-pencil"
-                rounded
-                outlined
-                severity="info"
-                tooltip="Edit Vehicle"
-                tooltipOptions={{ position: 'top' }}
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center' }}>
+            <i
+                className="pi pi-pencil"
                 onClick={(e) => {
                     e.stopPropagation();
                     handleOpenEditDialog(rowData);
                 }}
-                style={{ width: '32px', height: '32px' }}
+                title="Edit Vehicle"
+                style={{
+                    fontSize: '16px',
+                    color: '#3b82f6',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#2563eb';
+                    e.currentTarget.style.transform = 'scale(1.2)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#3b82f6';
+                    e.currentTarget.style.transform = 'scale(1)';
+                }}
             />
-            <Button
-                icon="pi pi-trash"
-                rounded
-                outlined
-                severity="danger"
-                tooltip="Delete Vehicle"
-                tooltipOptions={{ position: 'top' }}
+            <i
+                className="pi pi-trash"
                 onClick={(e) => {
                     e.stopPropagation();
                     onDeleteVehicle(rowData.id);
                     toast.success("🗑️ Vehicle deleted");
                 }}
-                style={{ width: '32px', height: '32px' }}
+                title="Delete Vehicle"
+                style={{
+                    fontSize: '16px',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#dc2626';
+                    e.currentTarget.style.transform = 'scale(1.2)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.transform = 'scale(1)';
+                }}
             />
         </div>
     );
@@ -283,7 +301,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     body={(rowData: Vehicle) => {
                         const isActive = rowData.status !== "Inactive";
                         return (
-                            <div 
+                            <div
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleOpenStatusDialog(rowData);
@@ -375,23 +393,23 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 style={{ width: "500px" }}
                 onHide={() => setShowDialog(false)}
                 footer={
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "12px", 
+                    <div style={{
+                        display: "flex",
+                        gap: "12px",
                         justifyContent: "flex-end",
                         padding: "16px 24px",
                         marginTop: "8px"
                     }}>
-                        <Button 
-                            label="Cancel" 
-                            onClick={() => setShowDialog(false)} 
+                        <Button
+                            label="Cancel"
+                            onClick={() => setShowDialog(false)}
                             outlined
                             className="p-button-secondary"
                         />
-                        <Button 
-                            label="Save" 
+                        <Button
+                            label="Save"
                             icon="pi pi-check"
-                            onClick={handleAddVehicle} 
+                            onClick={handleAddVehicle}
                             severity="success"
                             raised
                         />
@@ -400,10 +418,10 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             >
                 <div className="dialog-form vm-dialog-form" style={{ padding: '24px' }}>
                     <div style={{ marginBottom: '24px' }}>
-                        <div style={{ 
-                            fontSize: '12px', 
-                            fontWeight: '700', 
-                            color: 'var(--text-secondary)', 
+                        <div style={{
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: 'var(--text-secondary)',
                             marginBottom: '16px',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px'
@@ -435,10 +453,10 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
 
                     <div style={{ marginBottom: '24px' }}>
-                        <div style={{ 
-                            fontSize: '12px', 
-                            fontWeight: '700', 
-                            color: 'var(--text-secondary)', 
+                        <div style={{
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: 'var(--text-secondary)',
                             marginBottom: '16px',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px'
@@ -478,10 +496,10 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
 
                     <div>
-                        <div style={{ 
-                            fontSize: '12px', 
-                            fontWeight: '700', 
-                            color: 'var(--text-secondary)', 
+                        <div style={{
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: 'var(--text-secondary)',
                             marginBottom: '16px',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px'
@@ -530,23 +548,23 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     setSelectedVehicle(null);
                 }}
                 footer={
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "12px", 
+                    <div style={{
+                        display: "flex",
+                        gap: "12px",
                         justifyContent: "flex-end",
                         padding: "16px 24px",
                         marginTop: "8px"
                     }}>
-                        <Button 
-                            label="Cancel" 
-                            onClick={() => setShowEditDialog(false)} 
+                        <Button
+                            label="Cancel"
+                            onClick={() => setShowEditDialog(false)}
                             outlined
                             className="p-button-secondary"
                         />
-                        <Button 
-                            label="Update" 
+                        <Button
+                            label="Update"
                             icon="pi pi-check"
-                            onClick={handleEditVehicle} 
+                            onClick={handleEditVehicle}
                             severity="success"
                             raised
                         />
@@ -555,10 +573,10 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             >
                 <div className="dialog-form vm-dialog-form" style={{ padding: '24px' }}>
                     <div style={{ marginBottom: '24px' }}>
-                        <div style={{ 
-                            fontSize: '12px', 
-                            fontWeight: '700', 
-                            color: 'var(--text-secondary)', 
+                        <div style={{
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: 'var(--text-secondary)',
                             marginBottom: '16px',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px'
@@ -590,10 +608,10 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
 
                     <div>
-                        <div style={{ 
-                            fontSize: '12px', 
-                            fontWeight: '700', 
-                            color: 'var(--text-secondary)', 
+                        <div style={{
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: 'var(--text-secondary)',
                             marginBottom: '16px',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px'
@@ -644,16 +662,16 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     setSelectedVehicle(null);
                 }}
                 footer={
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "12px", 
+                    <div style={{
+                        display: "flex",
+                        gap: "12px",
                         justifyContent: "flex-end",
                         padding: "16px 24px",
                         marginTop: "8px"
                     }}>
-                        <Button 
-                            label="Cancel" 
-                            onClick={() => setShowStatusDialog(false)} 
+                        <Button
+                            label="Cancel"
+                            onClick={() => setShowStatusDialog(false)}
                             outlined
                             className="p-button-secondary"
                         />

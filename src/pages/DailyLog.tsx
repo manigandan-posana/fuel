@@ -188,7 +188,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
             return (
                 <Button
                     label="Close Log"
-                    
+
                     className="p-button-sm p-button-success"
                     onClick={() => {
                         setSelectedLog(rowData);
@@ -283,9 +283,9 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     resetCreateForm();
                 }}
                 footer={
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "12px", 
+                    <div style={{
+                        display: "flex",
+                        gap: "12px",
                         justifyContent: "flex-end",
                         padding: "16px 24px",
                         marginTop: "8px"
@@ -367,9 +367,9 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     resetCloseForm();
                 }}
                 footer={
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "12px", 
+                    <div style={{
+                        display: "flex",
+                        gap: "12px",
                         justifyContent: "flex-end",
                         padding: "16px 24px",
                         marginTop: "8px"

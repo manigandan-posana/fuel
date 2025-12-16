@@ -64,16 +64,30 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
     };
 
     const supplierActionsTemplate = (rowData: Supplier) => (
-        <Button
-            icon="pi pi-trash"
-            rounded
-            text
-            severity="danger"
-            onClick={() => {
-                onDeleteSupplier(rowData.id);
-                toast.success("🗑️ Supplier deleted");
-            }}
-        />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <i
+                className="pi pi-trash"
+                onClick={() => {
+                    onDeleteSupplier(rowData.id);
+                    toast.success("🗑️ Supplier deleted");
+                }}
+                title="Delete Supplier"
+                style={{
+                    fontSize: '16px',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#dc2626';
+                    e.currentTarget.style.transform = 'scale(1.2)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.transform = 'scale(1)';
+                }}
+            />
+        </div>
     );
 
     return (
@@ -155,9 +169,9 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
                 style={{ width: "500px" }}
                 onHide={() => setShowDialog(false)}
                 footer={
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "12px", 
+                    <div style={{
+                        display: "flex",
+                        gap: "12px",
                         justifyContent: "flex-end",
                         padding: "16px 24px",
                         marginTop: "8px"

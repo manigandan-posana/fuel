@@ -273,17 +273,34 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
   const statusTemplate = (rowData: FuelEntry) => {
     if (rowData.status === "open") {
       return (
-        <Button
-          
-          rounded
-          text
-          severity="success"
-          onClick={() => handleOpenClosingDialog(rowData)}
-          className="fm-icon-btn"
-        />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <i
+            className="pi pi-lock-open"
+            onClick={() => handleOpenClosingDialog(rowData)}
+            title="Open - Click to close entry"
+            style={{
+              fontSize: '18px',
+              color: '#f59e0b',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#d97706';
+              e.currentTarget.style.transform = 'scale(1.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#f59e0b';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          />
+        </div>
       );
     }
-    return <i className="pi pi-check-circle text-green-500" style={{ fontSize: "1.1rem" }} />;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <i className="pi pi-lock" style={{ fontSize: "18px", color: '#10b981' }} title="Closed" />
+      </div>
+    );
   };
 
   const projectSuppliers = suppliers.filter((s) => s.projectId === selectedProject);
@@ -708,9 +725,9 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
         style={{ width: "520px", maxWidth: "92vw" }}
         onHide={() => setShowClosingDialog(false)}
         footer={
-          <div style={{ 
-            display: "flex", 
-            gap: "12px", 
+          <div style={{
+            display: "flex",
+            gap: "12px",
             justifyContent: "flex-end",
             padding: "16px 24px",
             marginTop: "8px"
@@ -722,10 +739,10 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
               outlined
               className="p-button-secondary"
             />
-            <Button 
-              label="Save" 
+            <Button
+              label="Save"
               icon="pi pi-check"
-              onClick={handleSaveClosing} 
+              onClick={handleSaveClosing}
               severity="success"
               raised
             />
