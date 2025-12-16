@@ -733,13 +733,7 @@ body {
   font-size: var(--font-sm);
 }
 
-.custom-datatable {
-  overflow-x: auto;
-}
 
-.custom-datatable .p-datatable-wrapper {
-  min-width: 600px;
-}
 
 /* Pagination styling */
 .custom-datatable .p-paginator {

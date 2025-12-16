@@ -269,21 +269,21 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     body={(rowData: Vehicle) => (
                         <span className="font-medium">{rowData.vehicleName}</span>
                     )}
-                    style={{ minWidth: '180px' }}
+                    style={{ minWidth: '120px' }}
                 />
                 <Column
                     field="vehicleNumber"
                     header="Vehicle Number"
                     sortable
                     body={(rowData: Vehicle) => <span className="text-700">{rowData.vehicleNumber}</span>}
-                    style={{ minWidth: '150px' }}
+                    style={{ minWidth: '100px' }}
                 />
                 <Column
                     field="vehicleType"
                     header="Type"
                     body={(rowData: Vehicle) => <span className="text-700">{rowData.vehicleType}</span>}
                     sortable
-                    style={{ minWidth: '140px' }}
+                    style={{ minWidth: '90px' }}
                 />
                 <Column
                     field="fuelType"
@@ -293,7 +293,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                         return <span className={`font-medium ${color}`}>{rowData.fuelType}</span>;
                     }}
                     sortable
-                    style={{ minWidth: '120px' }}
+                    style={{ minWidth: '80px' }}
                 />
                 <Column
                     field="status"
@@ -335,7 +335,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                         );
                     }}
                     sortable
-                    style={{ minWidth: '120px' }}
+                    style={{ minWidth: '90px' }}
                 />
                 <Column
                     header="Total Km"
@@ -345,7 +345,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                         return <span className="font-medium text-700">{totalKm.toFixed(1)} km</span>;
                     }}
                     sortable
-                    style={{ minWidth: '110px' }}
+                    style={{ minWidth: '85px' }}
                 />
                 <Column
                     header="Total Litres"
@@ -355,7 +355,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                         return <span className="font-medium text-700">{totalLitres.toFixed(2)} L</span>;
                     }}
                     sortable
-                    style={{ minWidth: '120px' }}
+                    style={{ minWidth: '90px' }}
                 />
                 <Column
                     header="Total Fuel Cost"
@@ -365,7 +365,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                         return <span className="font-medium text-green-600">₹{totalCost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>;
                     }}
                     sortable
-                    style={{ minWidth: '130px' }}
+                    style={{ minWidth: '100px' }}
                 />
                 <Column
                     header="Avg Mileage"
@@ -377,7 +377,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                         return <span className="font-medium text-700">{avgMileage.toFixed(2)} km/l</span>;
                     }}
                     sortable
-                    style={{ minWidth: '120px' }}
+                    style={{ minWidth: '95px' }}
                 />
                 <Column
                     body={vehicleActionsTemplate}
