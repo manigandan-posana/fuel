@@ -32,8 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 aria-expanded={!collapsed}
             >
                 <div className="sidebar-header">
-                    <i className="pi pi-car" aria-hidden="true"></i>
-                    {!collapsed && <h2>PGC</h2>}
+                    <img src="/posana-logo.svg" alt="Posana" className="sidebar-logo" />
                     <button
                         className="sidebar-toggle"
                         aria-label={collapsed ? "Open sidebar" : "Close sidebar"}
