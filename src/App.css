@@ -1163,3 +1163,20 @@ body {
   /* Match app header size */
   line-height: 1;
 }
+/* Hide FileUpload Basic Mode Icon */
+.hidden-icon .p-button-icon {
+    display: none !important;
+}
+
+/* Ensure the button text is centered when icon is hidden */
+.hidden-icon .p-button-label {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    text-align: center;
+    width: 100%;
+}
+
+/* Additional specificity if needed */
+.p-fileupload-choose.hidden-icon .p-button-icon-left {
+    display: none !important;
+}

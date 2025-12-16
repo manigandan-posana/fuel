@@ -225,7 +225,6 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 <div></div>
                 <Button
                     label="Add Vehicle"
-                    icon="pi pi-plus"
                     onClick={() => setShowDialog(true)}
                     severity="success"
                     raised

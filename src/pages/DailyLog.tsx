@@ -205,7 +205,6 @@ const DailyLog: React.FC<DailyLogProps> = ({
             <div className="page-header" style={{ marginBottom: "1.5rem" }}>
                 <Button
                     label="Create Daily Log"
-                    icon="pi pi-plus"
                     className="p-button-success"
                     onClick={() => {
                         resetCreateForm();
@@ -348,28 +347,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
                         />
                     </div>
 
-                    <div className="field" style={{ marginBottom: "1rem" }}>
-                        <label htmlFor="create-opening-photo">Opening Km Photo (Optional)</label>
-                        <FileUpload
-                            id="create-opening-photo"
-                            mode="basic"
-                            accept="image/*"
-                            maxFileSize={5000000}
-                            onSelect={(e) => handleImageUpload(e, true)}
-                            auto
-                            chooseLabel="Upload Photo"
-                            chooseOptions={{ icon: "", iconOnly: false }}
-                        />
-                        {createOpeningPhoto && (
-                            <div style={{ marginTop: "0.5rem" }}>
-                                <img
-                                    src={createOpeningPhoto}
-                                    alt="Opening km"
-                                    style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px" }}
-                                />
-                            </div>
-                        )}
-                    </div>
+
                 </div>
             </Dialog>
 

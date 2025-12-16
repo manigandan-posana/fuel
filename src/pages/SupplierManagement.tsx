@@ -84,7 +84,6 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
                 <div></div>
                 <Button
                     label="Add Supplier"
-                    icon="pi pi-plus"
                     onClick={() => setShowDialog(true)}
                     severity="success"
                     raised
@@ -161,13 +160,12 @@ const SupplierManagement: React.FC<SupplierManagementProps> = ({
                     <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                         <Button
                             label="Cancel"
-                            icon="pi pi-times"
                             onClick={() => setShowDialog(false)}
                             outlined
+                            severity="success"
                         />
                         <Button
                             label="Save"
-                            icon="pi pi-check"
                             onClick={handleAddSupplier}
                             severity="success"
                             raised
