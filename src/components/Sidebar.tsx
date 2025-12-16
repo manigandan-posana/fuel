@@ -32,7 +32,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 aria-expanded={!collapsed}
             >
                 <div className="sidebar-header">
-                    <img src="/posana-logo.svg" alt="Posana" className="sidebar-logo" />
+                    {!collapsed && (
+                        <img src="/posana-logo.svg" alt="Posana Energy" className="sidebar-logo" />
+                    )}
                     <button
                         className="sidebar-toggle"
                         aria-label={collapsed ? "Open sidebar" : "Close sidebar"}

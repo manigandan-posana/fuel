@@ -182,6 +182,11 @@ body {
   justify-content: center;
 }
 
+.sidebar-desktop.collapsed .sidebar-header .sidebar-toggle {
+  margin-left: 0;
+}
+
+
 .sidebar-desktop.collapsed .sidebar-header h2 {
   display: none;
 }
