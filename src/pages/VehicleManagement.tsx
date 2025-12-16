@@ -358,8 +358,8 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 onHide={() => setShowDialog(false)}
                 footer={
                     <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
-                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowDialog(false)} outlined size="small" />
-                        <Button label="Save" icon="pi pi-check" onClick={handleAddVehicle} severity="success" raised size="small" />
+                        <Button label="Cancel" onClick={() => setShowDialog(false)} outlined severity="success" size="small" />
+                        <Button label="Save" onClick={handleAddVehicle} severity="success" raised size="small" />
                     </div>
                 }
             >
@@ -451,8 +451,8 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 }}
                 footer={
                     <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
-                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowEditDialog(false)} outlined size="small" />
-                        <Button label="Update" icon="pi pi-check" onClick={handleEditVehicle} severity="success" raised size="small" />
+                        <Button label="Cancel" onClick={() => setShowEditDialog(false)} outlined severity="success" size="small" />
+                        <Button label="Update" onClick={handleEditVehicle} severity="success" raised size="small" />
                     </div>
                 }
             >
@@ -518,7 +518,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 }}
                 footer={
                     <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
-                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowStatusDialog(false)} outlined size="small" />
+                        <Button label="Cancel" onClick={() => setShowStatusDialog(false)} outlined severity="success" size="small" />
                         <Button
                             label={selectedVehicle?.status === "Active" ? "Deactivate" : "Activate"}
                             icon="pi pi-check"

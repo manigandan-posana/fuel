@@ -284,21 +284,23 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     resetCreateForm();
                 }}
                 footer={
-                    <div>
+                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
                         <Button
                             label="Cancel"
-                            icon="pi pi-times"
                             onClick={() => {
                                 setShowCreateDialog(false);
                                 resetCreateForm();
                             }}
-                            className="p-button-text"
+                            outlined
+                            severity="success"
+                            size="small"
                         />
                         <Button
                             label="Create"
-                            icon="pi pi-check"
                             onClick={handleCreateLog}
-                            className="p-button-success"
+                            severity="success"
+                            raised
+                            size="small"
                         />
                     </div>
                 }
@@ -356,6 +358,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
                             onSelect={(e) => handleImageUpload(e, true)}
                             auto
                             chooseLabel="Upload Photo"
+                            chooseOptions={{ icon: "", iconOnly: false }}
                         />
                         {createOpeningPhoto && (
                             <div style={{ marginTop: "0.5rem" }}>
@@ -381,22 +384,24 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     resetCloseForm();
                 }}
                 footer={
-                    <div>
+                    <div style={{ display: "flex", gap: "var(--spacing-2)", justifyContent: "flex-end" }}>
                         <Button
                             label="Cancel"
-                            icon="pi pi-times"
                             onClick={() => {
                                 setShowCloseDialog(false);
                                 setSelectedLog(null);
                                 resetCloseForm();
                             }}
-                            className="p-button-text"
+                            outlined
+                            severity="success"
+                            size="small"
                         />
                         <Button
                             label="Close Log"
-                            icon="pi pi-check"
                             onClick={handleCloseLog}
-                            className="p-button-success"
+                            severity="success"
+                            raised
+                            size="small"
                         />
                     </div>
                 }
@@ -440,6 +445,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
                                 onSelect={(e) => handleImageUpload(e, false)}
                                 auto
                                 chooseLabel="Upload Photo"
+                                chooseOptions={{ icon: "", iconOnly: false }}
                             />
                             {closeClosingPhoto && (
                                 <div style={{ marginTop: "0.5rem" }}>
