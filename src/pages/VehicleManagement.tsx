@@ -384,15 +384,17 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             <Dialog
                 header="Add New Vehicle"
                 visible={showDialog}
-                style={{ width: "500px" }}
+                style={{ width: "520px", maxHeight: "90vh" }}
                 onHide={() => setShowDialog(false)}
+                contentStyle={{ padding: 0, overflow: "hidden" }}
                 footer={
                     <div style={{
                         display: "flex",
                         gap: "12px",
                         justifyContent: "flex-end",
-                        padding: "16px 24px",
-                        marginTop: "8px"
+                        padding: "14px 24px",
+                        borderTop: "1px solid var(--border-color)",
+                        background: "var(--bg-secondary)"
                     }}>
                         <Button
                             label="Cancel"
@@ -410,55 +412,39 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
                 }
             >
-                <div className="dialog-form vm-dialog-form" style={{ padding: '24px' }}>
-                    <div style={{ marginBottom: '24px' }}>
-                        <div style={{
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: 'var(--text-secondary)',
-                            marginBottom: '16px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                        }}>
-                            <i className="pi pi-info-circle" style={{ marginRight: '6px' }} />
-                            Basic Information
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <FloatLabel>
-                                <InputText
-                                    id="vehicleName"
-                                    value={vehicleForm.vehicleName}
-                                    onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleName: e.target.value }))}
-                                    className="w-full"
-                                />
-                                <label htmlFor="vehicleName">Vehicle Name *</label>
-                            </FloatLabel>
+                <div style={{
+                    padding: '24px',
+                    background: 'white'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
+                        {/* Vehicle Name */}
+                        <FloatLabel>
+                            <InputText
+                                id="vehicleName"
+                                value={vehicleForm.vehicleName}
+                                onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleName: e.target.value }))}
+                                className="w-full"
+                            />
+                            <label htmlFor="vehicleName">Vehicle Name *</label>
+                        </FloatLabel>
 
-                            <FloatLabel>
-                                <InputText
-                                    id="vehicleNumber"
-                                    value={vehicleForm.vehicleNumber}
-                                    onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleNumber: e.target.value }))}
-                                    className="w-full"
-                                />
-                                <label htmlFor="vehicleNumber">Vehicle Number *</label>
-                            </FloatLabel>
-                        </div>
-                    </div>
+                        {/* Vehicle Number */}
+                        <FloatLabel>
+                            <InputText
+                                id="vehicleNumber"
+                                value={vehicleForm.vehicleNumber}
+                                onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleNumber: e.target.value }))}
+                                className="w-full"
+                            />
+                            <label htmlFor="vehicleNumber">Vehicle Number *</label>
+                        </FloatLabel>
 
-                    <div style={{ marginBottom: '24px' }}>
-                        <div style={{
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: 'var(--text-secondary)',
-                            marginBottom: '16px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                        }}>
-                            <i className="pi pi-cog" style={{ marginRight: '6px' }} />
-                            Vehicle Details
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {/* Vehicle Type and Fuel Type - Side by Side */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <FloatLabel>
                                 <Dropdown
                                     inputId="vehicleType"
@@ -487,21 +473,9 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                                 <label htmlFor="fuelType">Fuel Type</label>
                             </FloatLabel>
                         </div>
-                    </div>
 
-                    <div>
-                        <div style={{
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: 'var(--text-secondary)',
-                            marginBottom: '16px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                        }}>
-                            <i className="pi pi-calendar" style={{ marginRight: '6px' }} />
-                            Status & Timeline
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {/* Start Date and Status - Side by Side */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <FloatLabel>
                                 <Calendar
                                     id="startDate"
@@ -536,18 +510,20 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             <Dialog
                 header="Edit Vehicle"
                 visible={showEditDialog}
-                style={{ width: "500px" }}
+                style={{ width: "520px", maxHeight: "90vh" }}
                 onHide={() => {
                     setShowEditDialog(false);
                     setSelectedVehicle(null);
                 }}
+                contentStyle={{ padding: 0, overflow: "hidden" }}
                 footer={
                     <div style={{
                         display: "flex",
                         gap: "12px",
                         justifyContent: "flex-end",
-                        padding: "16px 24px",
-                        marginTop: "8px"
+                        padding: "14px 24px",
+                        borderTop: "1px solid var(--border-color)",
+                        background: "var(--bg-secondary)"
                     }}>
                         <Button
                             label="Cancel"
@@ -565,55 +541,39 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     </div>
                 }
             >
-                <div className="dialog-form vm-dialog-form" style={{ padding: '24px' }}>
-                    <div style={{ marginBottom: '24px' }}>
-                        <div style={{
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: 'var(--text-secondary)',
-                            marginBottom: '16px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                        }}>
-                            <i className="pi pi-info-circle" style={{ marginRight: '6px' }} />
-                            Basic Information
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <FloatLabel>
-                                <InputText
-                                    id="editVehicleName"
-                                    value={vehicleForm.vehicleName}
-                                    onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleName: e.target.value }))}
-                                    className="w-full"
-                                />
-                                <label htmlFor="editVehicleName">Vehicle Name *</label>
-                            </FloatLabel>
+                <div style={{
+                    padding: '24px',
+                    background: 'white'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px'
+                    }}>
+                        {/* Vehicle Name */}
+                        <FloatLabel>
+                            <InputText
+                                id="editVehicleName"
+                                value={vehicleForm.vehicleName}
+                                onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleName: e.target.value }))}
+                                className="w-full"
+                            />
+                            <label htmlFor="editVehicleName">Vehicle Name *</label>
+                        </FloatLabel>
 
-                            <FloatLabel>
-                                <InputText
-                                    id="editVehicleNumber"
-                                    value={vehicleForm.vehicleNumber}
-                                    onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleNumber: e.target.value }))}
-                                    className="w-full"
-                                />
-                                <label htmlFor="editVehicleNumber">Vehicle Number *</label>
-                            </FloatLabel>
-                        </div>
-                    </div>
+                        {/* Vehicle Number */}
+                        <FloatLabel>
+                            <InputText
+                                id="editVehicleNumber"
+                                value={vehicleForm.vehicleNumber}
+                                onChange={(e) => setVehicleForm((prev) => ({ ...prev, vehicleNumber: e.target.value }))}
+                                className="w-full"
+                            />
+                            <label htmlFor="editVehicleNumber">Vehicle Number *</label>
+                        </FloatLabel>
 
-                    <div>
-                        <div style={{
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: 'var(--text-secondary)',
-                            marginBottom: '16px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                        }}>
-                            <i className="pi pi-cog" style={{ marginRight: '6px' }} />
-                            Vehicle Details
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {/* Vehicle Type and Fuel Type - Side by Side */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <FloatLabel>
                                 <Dropdown
                                     inputId="editVehicleType"

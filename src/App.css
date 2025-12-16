@@ -1238,6 +1238,7 @@ body {
   display: none !important;
 }
 
+
 /* Ensure the button text is centered when icon is hidden */
 .hidden-icon .p-button-label {
   margin-left: 0 !important;
@@ -1249,4 +1250,117 @@ body {
 /* Additional specificity if needed */
 .p-fileupload-choose.hidden-icon .p-button-icon-left {
   display: none !important;
+}
+
+/* ===== TABLE OVERFLOW FIX ===== */
+/* Prevent horizontal scrollbar on tables */
+.p-datatable-wrapper {
+  overflow-x: hidden !important;
+  overflow-y: auto;
+}
+
+.p-datatable {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+.p-datatable .p-datatable-thead>tr>th,
+.p-datatable .p-datatable-tbody>tr>td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure table fits within container */
+.fm-table-card .p-card-body,
+.fm-table-card .p-card-content {
+  overflow: hidden;
+}
+
+/* Compact table styling for better fit */
+.p-datatable-sm .p-datatable-thead>tr>th {
+  padding: var(--spacing-2) var(--spacing-2) !important;
+  font-size: var(--font-xs) !important;
+}
+
+.p-datatable-sm .p-datatable-tbody>tr>td {
+  padding: var(--spacing-2) var(--spacing-2) !important;
+  font-size: var(--font-xs) !important;
+}
+
+/* ===== DIALOG OVERFLOW FIX ===== */
+/* Prevent scrollbars in dialogs */
+.p-dialog .p-dialog-content {
+  overflow: hidden !important;
+  max-height: calc(90vh - 140px);
+}
+
+/* Ensure dialog forms fit properly */
+.dialog-form {
+  overflow: visible !important;
+}
+
+/* Optimize FloatLabel spacing in dialogs */
+.p-dialog .p-float-label {
+  margin-top: 20px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Compact dialog headers */
+.p-dialog .p-dialog-header {
+  padding: 18px 24px !important;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+/* Compact dialog footers */
+.p-dialog .p-dialog-footer {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Dialog input fields alignment */
+.p-dialog .p-inputtext,
+.p-dialog .p-dropdown,
+.p-dialog .p-calendar {
+  width: 100%;
+}
+
+/* Ensure consistent field heights in dialogs */
+.p-dialog .p-inputtext,
+.p-dialog .p-dropdown .p-dropdown-label,
+.p-dialog .p-calendar input {
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== CALENDAR ICON ONLY (HIDE BUTTON TEXT) ===== */
+/* Hide calendar button text, show only icon */
+.p-calendar-w-btn .p-datepicker-trigger {
+  width: 40px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.p-calendar-w-btn .p-datepicker-trigger .p-button-label {
+  display: none !important;
+}
+
+.p-calendar-w-btn .p-datepicker-trigger .p-button-icon {
+  margin: 0 !important;
+  font-size: 16px !important;
+}
+
+/* Adjust calendar input to accommodate icon-only button */
+.p-calendar-w-btn .p-inputtext {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.p-calendar-w-btn .p-datepicker-trigger {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
