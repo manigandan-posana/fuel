@@ -305,7 +305,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
                     </div>
                 }
             >
-                <div className="p-fluid">
+                <div className="p-fluid dl-dialog-form">
                     <div className="field" style={{ marginBottom: "1rem" }}>
                         <label htmlFor="create-date">Date *</label>
                         <Calendar
@@ -328,7 +328,7 @@ const DailyLog: React.FC<DailyLogProps> = ({
                             optionLabel="label"
                             optionValue="value"
                             onChange={(e) => setCreateVehicleId(e.value)}
-                            placeholder="Select available vehicle"
+                            placeholder=" "
                             className="w-full"
                             emptyMessage="No available vehicles (all have open logs)"
                         />

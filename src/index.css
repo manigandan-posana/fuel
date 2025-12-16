@@ -326,3 +326,45 @@ code {
   font-weight: 500;
   color: var(--primary-500);
 }
+
+/* =========================
+   DAILY LOG DIALOG FIX
+   ========================= */
+.dl-dialog-form .p-float-label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.dl-dialog-form .p-dropdown {
+  width: 100% !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.dl-dialog-form .p-dropdown .p-dropdown-label {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center;
+  padding: 0 0.75rem !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl-dialog-form .p-dropdown .p-dropdown-label.p-inputtext {
+  border: 0 !important;
+}
+
+.dl-dialog-form .p-dropdown .p-dropdown-trigger {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 0 !important;
+}
