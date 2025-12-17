@@ -158,6 +158,7 @@ const App: React.FC = () => {
             <VehicleDetails
               vehicle={selectedVehicle}
               fuelEntries={fuelEntries}
+              dailyLogs={dailyLogs}
               onBack={() => setSelectedVehicle(null)}
             />
           );

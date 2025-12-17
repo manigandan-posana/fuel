@@ -68,10 +68,24 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
     [vehicles, selectedProject]
   );
 
-  const activeVehicles = useMemo(
-    () => projectVehicles.filter((v) => v.status === "Active" || !v.status),
-    [projectVehicles]
-  );
+  const activeVehicles = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return projectVehicles.filter((v) => {
+      // Check if vehicle is inactive
+      if (v.status === "Inactive") return false;
+      
+      // Check if start date is in the future (Planned)
+      if (v.startDate) {
+        const startDate = new Date(v.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        if (startDate > today) return false;
+      }
+      
+      return true;
+    });
+  }, [projectVehicles]);
 
   const fuelTypeVehicles = useMemo(
     () => activeVehicles.filter((v) => v.fuelType === activeFuelType),
@@ -602,7 +616,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 className="p-inputtext-sm fm-input"
                 keyfilter="num"
               />
-              <label htmlFor="entryLitres">Litres</label>
+              <label htmlFor="entryLitres">Quantity</label>
             </FloatLabel>
 
             <FloatLabel className="fm-fl fm-narrow">
@@ -617,7 +631,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 className="p-inputtext-sm fm-input"
                 keyfilter="num"
               />
-              <label htmlFor="entryPrice">Price / L</label>
+              <label htmlFor="entryPrice">Unit Price</label>
             </FloatLabel>
 
             <FloatLabel className="fm-fl fm-narrow" style={{ position: "relative" }}>
@@ -704,17 +718,26 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
           />
           <Column
             field="pricePerLitre"
-            header="Price/L"
+            header="Unit Price"
             body={(rowData: FuelEntry) =>
               rowData.pricePerLitre ? `₹${numberTemplate(rowData.pricePerLitre, 2)}` : "—"
             }
-            style={{ width: "80px" }}
+            style={{ width: "90px" }}
           />
           <Column
             field="litres"
-            header="Litres"
+            header="Quantity"
             body={(rowData: FuelEntry) => `${numberTemplate(rowData.litres, 2)} L`}
-            style={{ width: "75px" }}
+            style={{ width: "80px" }}
+          />
+          <Column
+            header="Fuel Cost"
+            body={(rowData: FuelEntry) => 
+              rowData.pricePerLitre && rowData.litres 
+                ? `₹${numberTemplate(rowData.pricePerLitre * rowData.litres, 2)}` 
+                : "—"
+            }
+            style={{ width: "90px" }}
           />
           <Column
             field="openingKm"
@@ -796,7 +819,7 @@ const FuelManagement: React.FC<FuelManagementProps> = ({
                 <div>
                   <div className="fm-dialog-veh-name">{closingEntry.vehicleName}</div>
                   <div className="fm-dialog-veh-sub">
-                    Opening: <b>{closingEntry.openingKm.toFixed(1)}</b> km • Litres:{" "}
+                    Opening: <b>{closingEntry.openingKm.toFixed(1)}</b> km • Quantity:{" "}
                     <b>{closingEntry.litres.toFixed(2)}</b> L
                   </div>
                 </div>

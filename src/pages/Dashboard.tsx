@@ -29,8 +29,32 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
         const totalDistance = projectFuelEntries.reduce((sum, e) => sum + e.distance, 0);
         const totalLitres = projectFuelEntries.reduce((sum, e) => sum + e.litres, 0);
         const activeVehicles = projectVehicles.filter(v => v.status === "Active").length;
+        
+        // Calculate total rent cost
+        const totalRentCost = projectVehicles.reduce((sum, vehicle) => {
+            if (!vehicle.rentPrice || !vehicle.vehicleType.includes("Rent")) {
+                return sum;
+            }
+            
+            const startDate = vehicle.startDate || new Date();
+            const endDate = vehicle.endDate || new Date();
+            const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            
+            let rentCost = 0;
+            if (vehicle.rentPeriod === "monthly") {
+                const months = Math.ceil(daysDiff / 30);
+                rentCost = vehicle.rentPrice * months;
+            } else if (vehicle.rentPeriod === "daily") {
+                rentCost = vehicle.rentPrice * daysDiff;
+            } else if (vehicle.rentPeriod === "hourly") {
+                const hours = daysDiff * 24;
+                rentCost = vehicle.rentPrice * hours;
+            }
+            
+            return sum + rentCost;
+        }, 0);
 
-        return { totalCost, totalDistance, totalLitres, activeVehicles };
+        return { totalCost, totalDistance, totalLitres, activeVehicles, totalRentCost };
     }, [projectFuelEntries, projectVehicles]);
 
     // Fuel consumption by type
@@ -131,9 +155,27 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
             const vehicleEntries = projectFuelEntries.filter(e => e.vehicleId === vehicle.id);
             const totalKm = vehicleEntries.reduce((sum, e) => sum + e.distance, 0);
             const totalLitres = vehicleEntries.reduce((sum, e) => sum + e.litres, 0);
-            const totalCost = vehicleEntries.reduce((sum, e) => sum + (e.totalCost || 0), 0);
+            const totalFuelCost = vehicleEntries.reduce((sum, e) => sum + (e.totalCost || 0), 0);
             const avgMileage = totalLitres > 0 ? totalKm / totalLitres : 0;
             const performanceRate = avgMileage > 0 ? Math.min((avgMileage / 15) * 100, 100) : 0;
+
+            // Calculate rent cost
+            let totalRentCost = 0;
+            if (vehicle.rentPrice && vehicle.vehicleType.includes("Rent")) {
+                const startDate = vehicle.startDate || new Date();
+                const endDate = vehicle.endDate || new Date();
+                const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                
+                if (vehicle.rentPeriod === "monthly") {
+                    const months = Math.ceil(daysDiff / 30);
+                    totalRentCost = vehicle.rentPrice * months;
+                } else if (vehicle.rentPeriod === "daily") {
+                    totalRentCost = vehicle.rentPrice * daysDiff;
+                } else if (vehicle.rentPeriod === "hourly") {
+                    const hours = daysDiff * 24;
+                    totalRentCost = vehicle.rentPrice * hours;
+                }
+            }
 
             return {
                 id: vehicle.id,
@@ -141,7 +183,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
                 number: vehicle.vehicleNumber,
                 performanceRate,
                 avgMileage,
-                totalCost,
+                totalFuelCost,
+                totalRentCost,
+                totalCost: totalFuelCost + totalRentCost,
                 totalKm
             };
         });
@@ -322,7 +366,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                             <div style={{ fontSize: 'var(--font-xs)', opacity: 0.9, marginBottom: 'var(--spacing-1)' }}>
-                                Total Litres
+                                Total Quantity
                             </div>
                             <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700 }}>
                                 {formatNumber(stats.totalLitres, 1)} L
@@ -377,6 +421,41 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
                         </div>
                     </div>
                 </Card>
+
+                {stats.totalRentCost > 0 && (
+                    <Card style={{
+                        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                        border: 'none',
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--spacing-4)',
+                        color: 'white'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <div style={{ fontSize: 'var(--font-xs)', opacity: 0.9, marginBottom: 'var(--spacing-1)' }}>
+                                    Total Rent Cost
+                                </div>
+                                <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 700 }}>
+                                    {formatCurrency(stats.totalRentCost)}
+                                </div>
+                                <div style={{ fontSize: '9px', opacity: 0.8, marginTop: 'var(--spacing-1)' }}>
+                                    Total: {formatCurrency(stats.totalCost + stats.totalRentCost)} (Fuel+Rent)
+                                </div>
+                            </div>
+                            <div style={{
+                                background: 'rgba(255,255,255,0.2)',
+                                borderRadius: '50%',
+                                width: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <i className="pi pi-money-bill" style={{ fontSize: '18px' }}></i>
+                            </div>
+                        </div>
+                    </Card>
+                )}
             </div>
 
             {/* Charts Row */}
@@ -524,9 +603,16 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
                         <Column
                             header="Cost"
                             body={(rowData) => (
-                                <span style={{ fontSize: 'var(--font-xs)' }}>
-                                    {formatCurrency(rowData.totalCost)}
-                                </span>
+                                <div>
+                                    <div style={{ fontSize: 'var(--font-xs)', fontWeight: 600 }}>
+                                        {formatCurrency(rowData.totalCost)}
+                                    </div>
+                                    {rowData.totalRentCost > 0 && (
+                                        <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>
+                                            Fuel: {formatCurrency(rowData.totalFuelCost)} + Rent: {formatCurrency(rowData.totalRentCost)}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                             style={{ fontSize: 'var(--font-xs)', textAlign: 'right' }}
                         />
@@ -545,7 +631,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedProject, vehicles, fuelEn
                             Monthly Fuel Usage
                         </h3>
                         <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
-                            By fuel type (Litres)
+                            By fuel type (Quantity)
                         </div>
                     </div>
                     <div style={{ height: '280px' }}>

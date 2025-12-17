@@ -15,11 +15,13 @@ export interface Vehicle {
   vehicleNumber: string;
   vehicleType: VehicleType;
   fuelType: FuelType;
-  status: "Active" | "Inactive";
+  status: "Active" | "Inactive" | "Planned";
   startDate?: Date;
   endDate?: Date;
+  rentPrice?: number;
+  rentPeriod?: "monthly" | "daily" | "hourly";
   statusHistory?: Array<{
-    status: "Active" | "Inactive";
+    status: "Active" | "Inactive" | "Planned";
     startDate: Date;
     endDate?: Date;
     reason?: string;

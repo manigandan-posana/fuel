@@ -44,8 +44,10 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
         vehicleNumber: string;
         vehicleType: VehicleType;
         fuelType: FuelType;
-        status: "Active" | "Inactive";
+        status: "Active" | "Inactive" | "Planned";
         startDate: Date | null;
+        rentPrice: number | null;
+        rentPeriod: "monthly" | "daily" | "hourly";
     }>({
         vehicleName: "",
         vehicleNumber: "",
@@ -53,12 +55,33 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
         fuelType: "Petrol",
         status: "Active",
         startDate: new Date(),
+        rentPrice: null,
+        rentPeriod: "monthly",
     });
 
     const projectVehicles = useMemo(
         () => vehicles.filter((v) => v.projectId === selectedProject),
         [vehicles, selectedProject]
     );
+
+    // Compute display status based on start date
+    const vehiclesWithComputedStatus = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        return projectVehicles.map(vehicle => {
+            if (vehicle.startDate) {
+                const startDate = new Date(vehicle.startDate);
+                startDate.setHours(0, 0, 0, 0);
+                
+                // If start date is in the future, show as Planned
+                if (startDate > today) {
+                    return { ...vehicle, displayStatus: "Planned" as const };
+                }
+            }
+            return { ...vehicle, displayStatus: vehicle.status };
+        });
+    }, [projectVehicles]);
 
     const vehicleFuelEntries = useMemo(() => {
         if (!selectedVehicle) return [];
@@ -78,14 +101,25 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             return;
         }
 
+        // Determine status based on start date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(vehicleForm.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        
+        const calculatedStatus = startDate > today ? "Planned" : vehicleForm.status;
+
         onAddVehicle({
             projectId: selectedProject,
             ...vehicleForm,
+            status: calculatedStatus,
             startDate: vehicleForm.startDate,
+            rentPrice: vehicleForm.rentPrice || undefined,
+            rentPeriod: vehicleForm.rentPrice ? vehicleForm.rentPeriod : undefined,
             statusHistory: [{
-                status: vehicleForm.status,
+                status: calculatedStatus,
                 startDate: vehicleForm.startDate,
-                reason: "Initial vehicle registration"
+                reason: startDate > today ? "Vehicle planned for future date" : "Initial vehicle registration"
             }]
         });
 
@@ -97,6 +131,8 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             fuelType: "Petrol",
             status: "Active",
             startDate: new Date(),
+            rentPrice: null,
+            rentPeriod: "monthly",
         });
         toast.success("✅ Vehicle added successfully!");
     };
@@ -114,6 +150,8 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             vehicleNumber: vehicleForm.vehicleNumber,
             vehicleType: vehicleForm.vehicleType,
             fuelType: vehicleForm.fuelType,
+            rentPrice: vehicleForm.rentPrice || undefined,
+            rentPeriod: vehicleForm.rentPrice ? vehicleForm.rentPeriod : undefined,
         });
 
         setShowEditDialog(false);
@@ -130,6 +168,8 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             fuelType: vehicle.fuelType,
             status: vehicle.status,
             startDate: vehicle.startDate || new Date(),
+            rentPrice: vehicle.rentPrice || null,
+            rentPeriod: vehicle.rentPeriod || "monthly",
         });
         setShowEditDialog(true);
     };
@@ -250,7 +290,7 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
             </div>
 
             <DataTable
-                value={projectVehicles}
+                value={vehiclesWithComputedStatus}
                 paginator
                 rows={10}
                 dataKey="id"
@@ -298,32 +338,51 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                 <Column
                     field="status"
                     header="Status"
-                    body={(rowData: Vehicle) => {
-                        const isActive = rowData.status !== "Inactive";
+                    body={(rowData: Vehicle & { displayStatus?: string }) => {
+                        const status = rowData.displayStatus || rowData.status;
+                        const isActive = status === "Active";
+                        const isPlanned = status === "Planned";
+                        const isInactive = status === "Inactive";
+                        
+                        let color = '#10b981'; // green for active
+                        let icon = 'pi-check-circle';
+                        
+                        if (isPlanned) {
+                            color = '#3b82f6'; // blue for planned
+                            icon = 'pi-clock';
+                        } else if (isInactive) {
+                            color = '#ef4444'; // red for inactive
+                            icon = 'pi-times-circle';
+                        }
+                        
                         return (
                             <div
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleOpenStatusDialog(rowData);
+                                    if (!isPlanned) {
+                                        handleOpenStatusDialog(rowData);
+                                    }
                                 }}
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
-                                    cursor: 'pointer',
+                                    cursor: isPlanned ? 'default' : 'pointer',
                                     transition: 'all 0.2s',
-                                    color: isActive ? '#10b981' : '#ef4444',
+                                    color: color,
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = isActive ? '#059669' : '#dc2626';
+                                    if (!isPlanned) {
+                                        e.currentTarget.style.color = isActive ? '#059669' : '#dc2626';
+                                    }
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = isActive ? '#10b981' : '#ef4444';
+                                    e.currentTarget.style.color = color;
                                 }}
                             >
-                                <i className={isActive ? 'pi pi-check-circle' : 'pi pi-times-circle'} style={{ fontSize: '16px' }} />
+                                <i className={`pi ${icon}`} style={{ fontSize: '16px' }} />
                                 <span style={{ fontSize: '12px', fontWeight: '600' }}>
-                                    {isActive ? 'Active' : 'Inactive'}
+                                    {status}
                                 </span>
                             </div>
                         );
@@ -342,14 +401,14 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     style={{ minWidth: '85px' }}
                 />
                 <Column
-                    header="Total Litres"
+                    header="Total Quantity"
                     body={(rowData: Vehicle) => {
                         const vehicleEntries = fuelEntries.filter(e => e.vehicleId === rowData.id);
                         const totalLitres = vehicleEntries.reduce((sum, e) => sum + (e.litres || 0), 0);
                         return <span className="font-medium text-700">{totalLitres.toFixed(2)} L</span>;
                     }}
                     sortable
-                    style={{ minWidth: '90px' }}
+                    style={{ minWidth: '100px' }}
                 />
                 <Column
                     header="Total Fuel Cost"
@@ -372,6 +431,33 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                     }}
                     sortable
                     style={{ minWidth: '95px' }}
+                />
+                <Column
+                    header="Rent Cost"
+                    body={(rowData: Vehicle) => {
+                        if (!rowData.rentPrice || !rowData.vehicleType.includes("Rent")) {
+                            return <span className="text-500">—</span>;
+                        }
+                        
+                        const startDate = rowData.startDate || new Date();
+                        const endDate = rowData.endDate || new Date();
+                        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                        
+                        let totalRentCost = 0;
+                        if (rowData.rentPeriod === "monthly") {
+                            const months = Math.ceil(daysDiff / 30);
+                            totalRentCost = rowData.rentPrice * months;
+                        } else if (rowData.rentPeriod === "daily") {
+                            totalRentCost = rowData.rentPrice * daysDiff;
+                        } else if (rowData.rentPeriod === "hourly") {
+                            const hours = daysDiff * 24;
+                            totalRentCost = rowData.rentPrice * hours;
+                        }
+                        
+                        return <span className="font-medium text-orange-600">₹{totalRentCost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>;
+                    }}
+                    sortable
+                    style={{ minWidth: '100px' }}
                 />
                 <Column
                     body={vehicleActionsTemplate}
@@ -502,6 +588,40 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                                 <label htmlFor="status">Status</label>
                             </FloatLabel>
                         </div>
+
+                        {/* Rent Price and Period - Side by Side (for rent vehicles) */}
+                        {(vehicleForm.vehicleType.includes("Rent")) && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <FloatLabel>
+                                    <InputText
+                                        id="rentPrice"
+                                        value={vehicleForm.rentPrice?.toString() || ""}
+                                        onChange={(e) => setVehicleForm((prev) => ({ ...prev, rentPrice: parseFloat(e.target.value) || null }))}
+                                        keyfilter="num"
+                                        className="w-full"
+                                    />
+                                    <label htmlFor="rentPrice">Rent Price (₹)</label>
+                                </FloatLabel>
+
+                                <FloatLabel>
+                                    <Dropdown
+                                        inputId="rentPeriod"
+                                        value={vehicleForm.rentPeriod}
+                                        options={[
+                                            { label: "Per Month", value: "monthly" },
+                                            { label: "Per Day", value: "daily" },
+                                            { label: "Per Hour", value: "hourly" }
+                                        ]}
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        onChange={(e) => setVehicleForm((prev) => ({ ...prev, rentPeriod: e.value }))}
+                                        placeholder=" "
+                                        className="w-full"
+                                    />
+                                    <label htmlFor="rentPeriod">Rent Period</label>
+                                </FloatLabel>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Dialog>
@@ -602,6 +722,40 @@ const VehicleManagement: React.FC<VehicleManagementProps> = ({
                                 <label htmlFor="editFuelType">Fuel Type</label>
                             </FloatLabel>
                         </div>
+
+                        {/* Rent Price and Period - Side by Side (for rent vehicles) */}
+                        {(vehicleForm.vehicleType.includes("Rent")) && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <FloatLabel>
+                                    <InputText
+                                        id="editRentPrice"
+                                        value={vehicleForm.rentPrice?.toString() || ""}
+                                        onChange={(e) => setVehicleForm((prev) => ({ ...prev, rentPrice: parseFloat(e.target.value) || null }))}
+                                        keyfilter="num"
+                                        className="w-full"
+                                    />
+                                    <label htmlFor="editRentPrice">Rent Price (₹)</label>
+                                </FloatLabel>
+
+                                <FloatLabel>
+                                    <Dropdown
+                                        inputId="editRentPeriod"
+                                        value={vehicleForm.rentPeriod}
+                                        options={[
+                                            { label: "Per Month", value: "monthly" },
+                                            { label: "Per Day", value: "daily" },
+                                            { label: "Per Hour", value: "hourly" }
+                                        ]}
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        onChange={(e) => setVehicleForm((prev) => ({ ...prev, rentPeriod: e.value }))}
+                                        placeholder=" "
+                                        className="w-full"
+                                    />
+                                    <label htmlFor="editRentPeriod">Rent Period</label>
+                                </FloatLabel>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Dialog>

@@ -78,8 +78,23 @@ const DailyLog: React.FC<DailyLogProps> = ({
 
     // Get vehicles that don't have an active (open) log currently
     const availableVehicles = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         const activeProjectVehicles = vehicles.filter(
-            (v) => v.projectId === selectedProject && v.status === "Active"
+            (v) => {
+                if (v.projectId !== selectedProject) return false;
+                if (v.status === "Inactive") return false;
+                
+                // Check if start date is in the future (Planned)
+                if (v.startDate) {
+                    const startDate = new Date(v.startDate);
+                    startDate.setHours(0, 0, 0, 0);
+                    if (startDate > today) return false;
+                }
+                
+                return true;
+            }
         );
 
         // Find vehicle IDs that already have an OPEN log (global check, not just today)
